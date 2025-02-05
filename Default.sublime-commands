@@ -1,0 +1,6 @@
+[
+    {
+        "caption": "Jenkins: Show Documentation",
+        "command": "jenkins_doc_show"
+    }
+]

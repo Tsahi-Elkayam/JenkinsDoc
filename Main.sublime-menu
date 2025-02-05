@@ -1,0 +1,16 @@
+[
+    {
+        "id": "tools",
+        "children": [
+            {
+                "caption": "Jenkins Documentation",
+                "children": [
+                    {
+                        "caption": "Show Documentation",
+                        "command": "jenkins_doc_show"
+                    }
+                ]
+            }
+        ]
+    }
+]
