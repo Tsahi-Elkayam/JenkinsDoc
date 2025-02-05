@@ -2,6 +2,11 @@
 
 A Sublime Text plugin that provides documentation and autocompletion for Jenkins Pipeline syntax.
 
+this is my attempt to fork https://marketplace.visualstudio.com/items?itemName=Maarti.jenkins-doc
+
+full credit to ryan martinet for an amazing project
+still under development
+
 ## Features
 
 - Documentation on hover for Jenkins keywords
