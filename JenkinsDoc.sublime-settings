@@ -1,0 +1,40 @@
+{
+    // Enable or disable the plugin
+    "enabled": true,
+
+    // Status Bar Settings
+    "show_status_bar": true,
+    "status_bar_text": "JenkinsDoc",
+    "show_instruction_count": false,  // Show "(1729 steps)" in status bar
+
+    // Hover Documentation Settings
+    "show_hover_docs": true,
+    "hover_popup_max_width": 800,
+    "hover_popup_max_height": 500,
+    "show_documentation_links": true,
+    "show_parameter_types": true,
+    "show_optional_labels": true,
+
+    // Autocompletion Settings
+    "enable_autocompletion": true,
+    "inhibit_word_completions": true,  // Disable word-based completions when plugin completions are shown
+    "show_completion_hints": true,     // Show hints like "(Optional)" in completions
+    "max_completions": 100,             // Maximum number of completions to show
+
+    // Go to Definition Settings
+    "enable_goto_definition": true,
+    "show_goto_popup": true,
+
+    // File Type Detection
+    "detect_jenkinsfile": true,        // Detect files named "Jenkinsfile"
+    "detect_groovy_files": true,       // Detect .groovy files
+    "additional_file_patterns": [],    // Additional patterns like ["*.jenkins", "*.pipeline"]
+
+    // Console Logging
+    "show_console_messages": true,     // Show loading messages in console
+    "debug_mode": false,               // Show detailed debug messages
+
+    // Data Loading
+    "data_file": "jenkins_data.json",  // Name of the data file
+    "reload_on_save": false            // Reload data when settings are saved
+}

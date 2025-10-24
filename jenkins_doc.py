@@ -5,14 +5,16 @@ A Sublime Text plugin that provides documentation and autocompletion
 for Jenkins Pipeline syntax.
 
 Version: 1.0.0
-Author: Port of JenkinsDocExtension by Maarti
+Author: Tsahi Elkayam
+Repository: https://github.com/Tsahi-Elkayam/JenkinsDoc
 License: GPL-3.0
-Original: https://github.com/Maarti/JenkinsDocExtension
+Inspired by: JenkinsDocExtension for VSCode by Ryan Martinet (Maarti)
 """
 
 __version__ = '1.0.0'
-__author__ = 'Port of JenkinsDocExtension'
+__author__ = 'Tsahi Elkayam'
 __license__ = 'GPL-3.0'
+__repository__ = 'https://github.com/Tsahi-Elkayam/JenkinsDoc'
 
 import sublime
 import sublime_plugin
@@ -20,16 +22,22 @@ import json
 import os
 import re
 
-# Global variable to hold Jenkins documentation data
+# Global variables
 jenkins_data = {}
+settings = None
 
 def plugin_loaded():
     """Load plugin data when Sublime starts"""
-    global jenkins_data
+    global jenkins_data, settings
+
+    # Load settings
+    settings = sublime.load_settings('JenkinsDoc.sublime-settings')
+
+    # Load data
     jenkins_data = load_jenkins_data()
 
-    # Show loading status in console
-    if jenkins_data:
+    # Show loading status in console if enabled
+    if settings.get('show_console_messages', True) and jenkins_data:
         plugin_count = len(jenkins_data.get('plugins', []))
         instruction_count = len(jenkins_data.get('instructions', []))
         print("JenkinsDoc: Successfully loaded {} plugins with {} instructions".format(
@@ -39,13 +47,15 @@ def plugin_loaded():
 def load_jenkins_data():
     """Load Jenkins documentation data from JSON file"""
     plugin_path = os.path.dirname(os.path.realpath(__file__))
-    data_path = os.path.join(plugin_path, 'jenkins_data.json')
+    data_file = settings.get('data_file', 'jenkins_data.json') if settings else 'jenkins_data.json'
+    data_path = os.path.join(plugin_path, data_file)
 
     try:
         with open(data_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception as e:
-        print("JenkinsDoc Error: Failed to load jenkins_data.json - {}".format(str(e)))
+        if settings and settings.get('show_console_messages', True):
+            print("JenkinsDoc Error: Failed to load {} - {}".format(data_file, str(e)))
         # Return empty structure so plugin doesn't crash
         return {
             'plugins': [],
@@ -57,17 +67,28 @@ def load_jenkins_data():
 
 def is_jenkins_file(view):
     """Check if the current file is a Groovy or Jenkinsfile"""
+    if not settings or not settings.get('enabled', True):
+        return False
+
     syntax = view.syntax()
     file_name = view.file_name() or ""
     base_name = os.path.basename(file_name)
 
     # Check if it's a Groovy file by syntax
-    if syntax and 'groovy' in syntax.scope.lower():
+    if settings.get('detect_groovy_files', True) and syntax and 'groovy' in syntax.scope.lower():
         return True
 
     # Check if it's a Jenkinsfile (with or without extension)
-    if 'Jenkinsfile' in base_name or base_name == 'Jenkinsfile':
-        return True
+    if settings.get('detect_jenkinsfile', True):
+        if 'Jenkinsfile' in base_name or base_name == 'Jenkinsfile':
+            return True
+
+    # Check additional file patterns
+    additional_patterns = settings.get('additional_file_patterns', [])
+    for pattern in additional_patterns:
+        import fnmatch
+        if fnmatch.fnmatch(file_name, pattern):
+            return True
 
     return False
 
@@ -101,14 +122,23 @@ class JenkinsDocStatusBar(sublime_plugin.EventListener):
 
     def _update_status(self, view):
         """Update the status bar based on file type"""
+        if not settings or not settings.get('show_status_bar', True):
+            view.erase_status('jenkins_doc')
+            return
+
         if is_jenkins_file(view):
             # Check if data is loaded
             if jenkins_data and jenkins_data.get('instructions'):
-                # Show JenkinsDoc is active
-                view.set_status('jenkins_doc', 'JenkinsDoc')
+                # Build status text from settings
+                status_text = settings.get('status_bar_text', 'JenkinsDoc')
+                if settings.get('show_instruction_count', False):
+                    count = len(jenkins_data.get('instructions', []))
+                    status_text = "{} ({} steps)".format(status_text, count)
+                view.set_status('jenkins_doc', status_text)
             else:
                 # Show error state if no data loaded
-                view.set_status('jenkins_doc', 'JenkinsDoc (no data)')
+                status_text = settings.get('status_bar_text', 'JenkinsDoc')
+                view.set_status('jenkins_doc', "{} (no data)".format(status_text))
         else:
             # Clear status for non-Jenkins files
             view.erase_status('jenkins_doc')
@@ -228,6 +258,9 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
         if hover_zone != sublime.HOVER_TEXT:
             return
 
+        if not settings or not settings.get('show_hover_docs', True):
+            return
+
         if not is_jenkins_file(view):
             return
 
@@ -240,11 +273,13 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
         doc = self._find_documentation(word)
         if doc:
             wrapped_doc = "{0}<div class='container'>{1}</div>".format(self.css, doc)
+            max_width = settings.get('hover_popup_max_width', 800)
+            max_height = settings.get('hover_popup_max_height', 500)
             view.show_popup(wrapped_doc,
                           flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY,
                           location=point,
-                          max_width=800,
-                          max_height=500)
+                          max_width=max_width,
+                          max_height=max_height)
 
     def _find_documentation(self, word):
         """Find documentation for the given word"""
@@ -360,6 +395,10 @@ class JenkinsCompletionsCommand(sublime_plugin.EventListener):
     """Provide autocompletions for Jenkins keywords"""
 
     def on_query_completions(self, view, prefix, locations):
+        # Check if completions are enabled
+        if not settings or not settings.get('enable_autocompletion', True):
+            return None
+
         # Only activate for Groovy files and Jenkinsfiles
         if not is_jenkins_file(view):
             return None
@@ -407,7 +446,14 @@ class JenkinsCompletionsCommand(sublime_plugin.EventListener):
         completions.extend(self._get_directive_completions())
         completions.extend(self._get_env_completions(include_prefix=True))
 
-        return (completions, sublime.INHIBIT_WORD_COMPLETIONS)
+        # Limit completions if configured
+        max_completions = settings.get('max_completions', 100) if settings else 100
+        if len(completions) > max_completions:
+            completions = completions[:max_completions]
+
+        # Determine if we should inhibit word completions
+        flags = sublime.INHIBIT_WORD_COMPLETIONS if settings and settings.get('inhibit_word_completions', True) else 0
+        return (completions, flags)
 
     def _get_instruction_completions(self):
         """Get completions for Jenkins instructions"""
@@ -593,6 +639,9 @@ class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
         if hover_zone != sublime.HOVER_TEXT:
             return
 
+        if not settings or not settings.get('enable_goto_definition', True):
+            return
+
         if not is_jenkins_file(view):
             return
 
@@ -617,16 +666,18 @@ class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
             parts = extended_word.split('.')
             if len(parts) == 2:
                 file_name, function_name = parts
-                # Show a hint that definition can be navigated
-                link_html = '<a href="goto:{0}:{1}">Go to definition of {2}</a>'.format(
-                    file_name, function_name, extended_word
-                )
-                view.show_popup(
-                    link_html,
-                    flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY,
-                    location=point,
-                    on_navigate=lambda href: self._handle_goto(view, href)
-                )
+                # Check if we should show popup
+                if settings and settings.get('show_goto_popup', True):
+                    # Show a hint that definition can be navigated
+                    link_html = '<a href="goto:{0}:{1}">Go to definition of {2}</a>'.format(
+                        file_name, function_name, extended_word
+                    )
+                    view.show_popup(
+                        link_html,
+                        flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY,
+                        location=point,
+                        on_navigate=lambda href: self._handle_goto(view, href)
+                    )
 
     def _handle_goto(self, view, href):
         """Handle goto definition navigation"""
@@ -759,24 +810,56 @@ class JenkinsDocShowCommand(sublime_plugin.WindowCommand):
         message = """Jenkins Documentation for Sublime Text
 
 Version: {version}
-Original Extension: JenkinsDocExtension by Maarti
+Author: Tsahi Elkayam
+
+A comprehensive Jenkins Pipeline documentation and autocompletion
+plugin for Sublime Text.
 
 Features:
 • Hover documentation for Jenkins Pipeline steps
-• Autocompletion for instructions, sections, and directives
+• Intelligent autocompletion with parameter hints
 • Environment variable completion (env.)
-• Parameter autocompletion for function calls
 • Go to definition for Groovy functions
-• Smart snippets with enum values
-• Post-condition block detection
+• Context-aware completions
+• Status bar indicator
+• Fully configurable settings
 
-Usage:
-- Hover over Jenkins keywords to see documentation
-- Type to get autocompletion suggestions
-- Use Ctrl/Cmd+Click to go to function definitions
+Repository:
+https://github.com/Tsahi-Elkayam/JenkinsDoc
 
-For more information, visit:
-https://github.com/Maarti/JenkinsDocExtension
+Inspired by the VSCode JenkinsDocExtension by Ryan Martinet (Maarti).
+
+© 2025 Tsahi Elkayam
 """.format(version=__version__)
 
         sublime.message_dialog(message)
+
+
+class JenkinsDocReloadCommand(sublime_plugin.WindowCommand):
+    """Reload Jenkins Documentation plugin settings and data"""
+
+    def run(self):
+        """Reload settings and data"""
+        global jenkins_data, settings
+
+        # Reload settings
+        settings = sublime.load_settings('JenkinsDoc.sublime-settings')
+
+        # Reload data
+        jenkins_data = load_jenkins_data()
+
+        # Show status
+        if jenkins_data:
+            plugin_count = len(jenkins_data.get('plugins', []))
+            instruction_count = len(jenkins_data.get('instructions', []))
+            sublime.status_message("JenkinsDoc: Reloaded {} plugins with {} instructions".format(
+                plugin_count, instruction_count
+            ))
+            if settings.get('show_console_messages', True):
+                print("JenkinsDoc: Reloaded {} plugins with {} instructions".format(
+                    plugin_count, instruction_count
+                ))
+        else:
+            sublime.status_message("JenkinsDoc: Failed to reload data")
+            if settings.get('show_console_messages', True):
+                print("JenkinsDoc: Failed to reload data")

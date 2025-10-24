@@ -1,8 +1,12 @@
 # Jenkins Documentation for Sublime Text
 
-A Sublime Text plugin that provides comprehensive documentation and autocompletion for Jenkins Pipeline syntax. This is a feature-complete port of the popular [JenkinsDocExtension](https://marketplace.visualstudio.com/items?itemName=Maarti.jenkins-doc) for VS Code.
+A comprehensive Jenkins Pipeline documentation and autocompletion plugin for Sublime Text.
 
-Full credit to [Ryan Martinet](https://github.com/Maarti) for the original amazing project!
+**Author:** Tsahi Elkayam
+**Repository:** https://github.com/Tsahi-Elkayam/JenkinsDoc
+**License:** GPL-3.0
+
+Inspired by the [JenkinsDocExtension](https://marketplace.visualstudio.com/items?itemName=Maarti.jenkins-doc) for VS Code by Ryan Martinet (Maarti).
 
 ## ✨ Features
 
@@ -72,12 +76,43 @@ Custom HTML/CSS styling for documentation popups with:
    - **Linux**: `~/.config/sublime-text/Packages/`
 3. Restart Sublime Text
 
+## ⚙️ Configuration
+
+### Access Settings
+1. **Via Menu**: Preferences → Package Settings → JenkinsDoc → Settings (opens both default and user settings side by side)
+2. **Via Command Palette**: "Preferences: JenkinsDoc Settings"
+
+### Available Settings
+```javascript
+{
+    // Core Settings
+    "enabled": true,                      // Enable/disable the plugin
+    "show_status_bar": true,             // Show status bar indicator
+    "status_bar_text": "JenkinsDoc",     // Custom status bar text
+
+    // Hover Documentation
+    "show_hover_docs": true,              // Enable hover popups
+    "hover_popup_max_width": 800,        // Maximum popup width
+    "hover_popup_max_height": 500,       // Maximum popup height
+
+    // Autocompletion
+    "enable_autocompletion": true,       // Enable completions
+    "max_completions": 100,              // Max completions to show
+
+    // File Detection
+    "detect_jenkinsfile": true,          // Detect Jenkinsfile
+    "detect_groovy_files": true,         // Detect .groovy files
+    "additional_file_patterns": []       // Add patterns like ["*.jenkins"]
+}
+```
+
 ## 🚀 Usage
 
 ### Getting Started
 The plugin automatically activates for:
 - `.groovy` files
 - `Jenkinsfile` (with or without extension)
+- Any additional patterns you configure
 
 ### Autocompletion Examples
 

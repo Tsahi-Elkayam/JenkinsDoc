@@ -1,7 +1,7 @@
 GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
 
-Copyright (C) 2025 JenkinsDoc Contributors
+Copyright (C) 2025 Tsahi Elkayam
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ---
 
-This project is a port of JenkinsDocExtension for VS Code:
+This project is inspired by JenkinsDocExtension for VS Code:
 https://github.com/Maarti/JenkinsDocExtension
 
 Original work Copyright (C) Ryan Martinet (Maarti)

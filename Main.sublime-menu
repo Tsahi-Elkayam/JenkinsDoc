@@ -12,5 +12,60 @@
                 ]
             }
         ]
+    },
+    {
+        "caption": "Preferences",
+        "mnemonic": "n",
+        "id": "preferences",
+        "children": [
+            {
+                "caption": "Package Settings",
+                "mnemonic": "P",
+                "id": "package-settings",
+                "children": [
+                    {
+                        "caption": "JenkinsDoc",
+                        "children": [
+                            {
+                                "command": "edit_settings",
+                                "args": {
+                                    "base_file": "${packages}/JenkinsDoc/JenkinsDoc.sublime-settings",
+                                    "default": "// Settings in here override those in \"JenkinsDoc/JenkinsDoc.sublime-settings\"\n{\n\t\n}\n"
+                                },
+                                "caption": "Settings"
+                            },
+                            { "caption": "-" },
+                            {
+                                "command": "open_file",
+                                "args": {
+                                    "file": "${packages}/JenkinsDoc/Default (${platform}).sublime-keymap"
+                                },
+                                "caption": "Key Bindings - Default"
+                            },
+                            {
+                                "command": "open_file",
+                                "args": {
+                                    "file": "${packages}/User/Default (${platform}).sublime-keymap"
+                                },
+                                "caption": "Key Bindings - User"
+                            },
+                            { "caption": "-" },
+                            {
+                                "command": "open_file",
+                                "args": {
+                                    "file": "${packages}/JenkinsDoc/Default.sublime-commands"
+                                },
+                                "caption": "Command Palette"
+                            },
+                            { "caption": "-" },
+                            {
+                                "command": "jenkins_doc_show",
+                                "caption": "About JenkinsDoc"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     }
 ]
