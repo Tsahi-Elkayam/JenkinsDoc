@@ -47,6 +47,12 @@ Custom HTML/CSS styling for documentation popups with:
 - Clear visual hierarchy
 - Dark theme that matches Sublime Text
 
+### 📊 Status Bar Indicator
+- Shows "JenkinsDoc" in the status bar when editing Jenkins files
+- Automatically appears for `.groovy` files and `Jenkinsfile`
+- Clears when switching to non-Jenkins files
+- Shows error state if data failed to load
+
 ## 📦 Installation
 
 ### Package Control (Recommended)

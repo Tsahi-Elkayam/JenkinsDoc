@@ -28,13 +28,32 @@ def plugin_loaded():
     global jenkins_data
     jenkins_data = load_jenkins_data()
 
+    # Show loading status in console
+    if jenkins_data:
+        plugin_count = len(jenkins_data.get('plugins', []))
+        instruction_count = len(jenkins_data.get('instructions', []))
+        print("JenkinsDoc: Successfully loaded {} plugins with {} instructions".format(
+            plugin_count, instruction_count
+        ))
+
 def load_jenkins_data():
     """Load Jenkins documentation data from JSON file"""
     plugin_path = os.path.dirname(os.path.realpath(__file__))
     data_path = os.path.join(plugin_path, 'jenkins_data.json')
 
-    with open(data_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    try:
+        with open(data_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print("JenkinsDoc Error: Failed to load jenkins_data.json - {}".format(str(e)))
+        # Return empty structure so plugin doesn't crash
+        return {
+            'plugins': [],
+            'instructions': [],
+            'sections': [],
+            'directives': [],
+            'environmentVariables': []
+        }
 
 def is_jenkins_file(view):
     """Check if the current file is a Groovy or Jenkinsfile"""
@@ -51,6 +70,48 @@ def is_jenkins_file(view):
         return True
 
     return False
+
+class JenkinsDocStatusBar(sublime_plugin.EventListener):
+    """Show JenkinsDoc status in the status bar"""
+
+    def on_activated(self, view):
+        """Update status bar when a view is activated"""
+        self._update_status(view)
+
+    def on_new(self, view):
+        """Update status bar for new files"""
+        self._update_status(view)
+
+    def on_load(self, view):
+        """Update status bar when a file is loaded"""
+        self._update_status(view)
+
+    def on_clone(self, view):
+        """Update status bar when a view is cloned"""
+        self._update_status(view)
+
+    def on_post_text_command(self, view, command_name, args):
+        """Update status bar after text commands (like set syntax)"""
+        if command_name == 'set_file_type':
+            self._update_status(view)
+
+    def on_post_save(self, view):
+        """Update status bar after saving (in case filename changes)"""
+        self._update_status(view)
+
+    def _update_status(self, view):
+        """Update the status bar based on file type"""
+        if is_jenkins_file(view):
+            # Check if data is loaded
+            if jenkins_data and jenkins_data.get('instructions'):
+                # Show JenkinsDoc is active
+                view.set_status('jenkins_doc', 'JenkinsDoc')
+            else:
+                # Show error state if no data loaded
+                view.set_status('jenkins_doc', 'JenkinsDoc (no data)')
+        else:
+            # Clear status for non-Jenkins files
+            view.erase_status('jenkins_doc')
 
 class JenkinsDocHoverCommand(sublime_plugin.EventListener):
     def __init__(self):
