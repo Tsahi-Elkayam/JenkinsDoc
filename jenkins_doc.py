@@ -20,6 +20,9 @@ import json
 import os
 import re
 
+# Global variable to hold Jenkins documentation data
+jenkins_data = {}
+
 def plugin_loaded():
     """Load plugin data when Sublime starts"""
     global jenkins_data

@@ -5,6 +5,7 @@ Scrapes Jenkins Pipeline documentation from jenkins.io and generates jenkins_dat
 """
 
 import json
+import os
 import re
 import time
 from datetime import datetime
@@ -16,7 +17,9 @@ from bs4 import BeautifulSoup
 JENKINS_BASE_URL = 'https://www.jenkins.io'
 JENKINS_REFERENCE_URL = f'{JENKINS_BASE_URL}/doc/pipeline/steps/'
 OUTPUT_FILE = '../jenkins_data.json'
+OUTPUT_FILE_FORMATTED = '../jenkins_data_formatted.json'  # Optional formatted version
 REQUEST_DELAY = 0.1  # Delay between requests to avoid overwhelming the server
+SAVE_FORMATTED_VERSION = False  # Set to True if you want both minified and formatted versions
 
 # Environment variables (static data)
 ENVIRONMENT_VARIABLES = [
@@ -361,10 +364,28 @@ class JenkinsScraper:
         # Sort instructions alphabetically
         self.jenkins_data['instructions'].sort(key=lambda x: x['command'])
 
+        # Save minified JSON (no indentation, no spaces after separators)
         with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-            json.dump(self.jenkins_data, f, indent=2, ensure_ascii=False)
+            json.dump(self.jenkins_data, f, separators=(',', ':'), ensure_ascii=False)
+
+        # Calculate file size for reporting
+        file_size = os.path.getsize(OUTPUT_FILE)
+        size_mb = file_size / (1024 * 1024)
 
         print(f"\n✓ Data saved to {OUTPUT_FILE}")
+        print(f"  File size: {size_mb:.1f} MB (minified)")
+
+        # Optionally save formatted version for development/debugging
+        if SAVE_FORMATTED_VERSION:
+            with open(OUTPUT_FILE_FORMATTED, 'w', encoding='utf-8') as f:
+                json.dump(self.jenkins_data, f, indent=2, ensure_ascii=False)
+
+            formatted_size = os.path.getsize(OUTPUT_FILE_FORMATTED)
+            formatted_mb = formatted_size / (1024 * 1024)
+
+            print(f"  Formatted version saved to {OUTPUT_FILE_FORMATTED}")
+            print(f"  Formatted size: {formatted_mb:.1f} MB")
+            print(f"  Size reduction: {((formatted_size - file_size) / formatted_size * 100):.1f}%")
 
 
 def main():
