@@ -1,3 +1,19 @@
+"""
+Jenkins Documentation for Sublime Text
+
+A Sublime Text plugin that provides documentation and autocompletion
+for Jenkins Pipeline syntax.
+
+Version: 1.0.0
+Author: Port of JenkinsDocExtension by Maarti
+License: GPL-3.0
+Original: https://github.com/Maarti/JenkinsDocExtension
+"""
+
+__version__ = '1.0.0'
+__author__ = 'Port of JenkinsDocExtension'
+__license__ = 'GPL-3.0'
+
 import sublime
 import sublime_plugin
 import json
@@ -16,6 +32,22 @@ def load_jenkins_data():
 
     with open(data_path, 'r', encoding='utf-8') as f:
         return json.load(f)
+
+def is_jenkins_file(view):
+    """Check if the current file is a Groovy or Jenkinsfile"""
+    syntax = view.syntax()
+    file_name = view.file_name() or ""
+    base_name = os.path.basename(file_name)
+
+    # Check if it's a Groovy file by syntax
+    if syntax and 'groovy' in syntax.scope.lower():
+        return True
+
+    # Check if it's a Jenkinsfile (with or without extension)
+    if 'Jenkinsfile' in base_name or base_name == 'Jenkinsfile':
+        return True
+
+    return False
 
 class JenkinsDocHoverCommand(sublime_plugin.EventListener):
     def __init__(self):
@@ -132,8 +164,7 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
         if hover_zone != sublime.HOVER_TEXT:
             return
 
-        syntax = view.syntax()
-        if not syntax or 'groovy' not in syntax.scope.lower():
+        if not is_jenkins_file(view):
             return
 
         word_region = view.word(point)
@@ -182,16 +213,28 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
             html += "<h4>Parameters</h4><ul>"
             for param in instruction['parameters']:
                 optional = "(Optional)" if param.get('isOptional') else ""
-                html += """
+
+                # Build parameter documentation with enum values
+                param_doc = """
                     <li>
                         <div>
                             <span class="param-name">{0}</span>
                             <span class="param-type">{1}</span>
                             <span class="param-optional">{2}</span>
-                        </div>
-                        <div class="param-desc">{3}</div>
-                    </li>
-                """.format(param['name'], param['type'], optional, param['description'])
+                        </div>""".format(param['name'], param['type'], optional)
+
+                # Add enum values if present (matching VS Code implementation line 57)
+                if param.get('values') and len(param['values']) > 0:
+                    param_doc += "<div style='margin-left: 20px; margin-top: 8px;'><strong>Values:</strong><ul style='margin: 4px 0; padding-left: 20px;'>"
+                    for value in param['values']:
+                        param_doc += "<li style='color: #9cdcfe;'>{0}</li>".format(value)
+                    param_doc += "</ul></div>"
+
+                # Add parameter description
+                param_doc += "<div class='param-desc'>{0}</div>".format(param['description'])
+                param_doc += "</li>"
+
+                html += param_doc
             html += "</ul>"
 
         html += "</div>"  # Close content-wrapper
@@ -254,8 +297,7 @@ class JenkinsCompletionsCommand(sublime_plugin.EventListener):
 
     def on_query_completions(self, view, prefix, locations):
         # Only activate for Groovy files and Jenkinsfiles
-        syntax = view.syntax()
-        if not syntax or 'groovy' not in syntax.scope.lower():
+        if not is_jenkins_file(view):
             return None
 
         completions = []
@@ -266,18 +308,40 @@ class JenkinsCompletionsCommand(sublime_plugin.EventListener):
         line_start = line_region.begin()
         line_up_to_cursor = view.substr(sublime.Region(line_start, point))
 
-        # Check if we're after 'env.'
-        if 'env.' in line_up_to_cursor:
-            return (self._get_env_completions(), sublime.INHIBIT_WORD_COMPLETIONS)
+        # Get previous line for multi-line context awareness
+        previous_line = ""
+        current_line_num = view.rowcol(point)[0]
+        if current_line_num > 0:
+            previous_line_region = view.line(view.text_point(current_line_num - 1, 0))
+            previous_line = view.substr(previous_line_region)
 
-        # Check if we're inside a post block
+        # Combine previous and current line for context-aware matching
+        lines_prefix = previous_line + '\n' + line_up_to_cursor
+
+        # Check if we're inside a function call for parameter completion
+        param_completions = self._get_parameter_completions(line_up_to_cursor)
+        if param_completions:
+            return (param_completions, sublime.INHIBIT_WORD_COMPLETIONS)
+
+        # Check if we're after 'env.' using regex pattern (more precise than string search)
+        # Pattern matches "env." at the end of the line, optionally followed by partial word
+        if re.search(r'(env)\.\w*$', line_up_to_cursor):
+            # User already typed "env.", so only insert the variable name
+            return (self._get_env_completions(include_prefix=False), sublime.INHIBIT_WORD_COMPLETIONS)
+
+        # Check if we're inside a post block (using multi-line context)
+        if re.search(r'post\s*\{\s*\w*$', lines_prefix):
+            return (self._get_post_completions(), sublime.INHIBIT_WORD_COMPLETIONS)
+
+        # Fallback to checking with full document context
         if self._is_inside_post_block(view, point):
             return (self._get_post_completions(), sublime.INHIBIT_WORD_COMPLETIONS)
 
-        # Add all other completions
+        # Add all other completions (including env with "env." prefix)
         completions.extend(self._get_instruction_completions())
         completions.extend(self._get_section_completions())
         completions.extend(self._get_directive_completions())
+        completions.extend(self._get_env_completions(include_prefix=True))
 
         return (completions, sublime.INHIBIT_WORD_COMPLETIONS)
 
@@ -296,39 +360,141 @@ class JenkinsCompletionsCommand(sublime_plugin.EventListener):
             )
         return completions
 
-    def _get_env_completions(self):
-        """Get completions for environment variables"""
-        return [
-            ["{0}\tEnvironment Variable".format(var['name']), var['name']]
-            for var in jenkins_data['environmentVariables']
-        ]
+    def _get_env_completions(self, include_prefix=False):
+        """Get completions for environment variables
+
+        Args:
+            include_prefix: If True, insert "env.NAME". If False, insert just "NAME".
+                           False is used when user has already typed "env."
+        """
+        completions = []
+        for var in jenkins_data['environmentVariables']:
+            if include_prefix:
+                # When not after "env.", insert full "env.NAME"
+                trigger = "{0}\tEnvironment Variable".format(var['name'])
+                contents = "env.{0}".format(var['name'])
+            else:
+                # When after "env.", insert just the variable name to avoid duplication
+                trigger = "{0}\tEnvironment Variable".format(var['name'])
+                contents = var['name']
+
+            completions.append([trigger, contents])
+
+        return completions
 
     def _get_section_completions(self):
         """Get completions for Jenkins sections"""
-        return [
-            ["{0}\tJenkins Section".format(section['name']),
-             "{0} {{\n\t$0\n}}".format(section['name'])]
-            for section in jenkins_data['sections']
-        ]
+        completions = []
+        for section in jenkins_data['sections']:
+            # Check if section has inner instructions
+            if section.get('innerInstructions'):
+                # Add hint about available inner instructions
+                inner_list = ", ".join(section['innerInstructions'][:3])
+                if len(section['innerInstructions']) > 3:
+                    inner_list += "..."
+                trigger = "{0}\tJenkins Section ({1})".format(section['name'], inner_list)
+                # Add a comment hint in the snippet
+                contents = "{0} {{\n\t${{1:// {2}}}\n}}".format(
+                    section['name'],
+                    ", ".join(section['innerInstructions'])
+                )
+            else:
+                trigger = "{0}\tJenkins Section".format(section['name'])
+                contents = "{0} {{\n\t$0\n}}".format(section['name'])
+
+            completions.append([trigger, contents])
+        return completions
 
     def _get_directive_completions(self):
         """Get completions for Jenkins directives"""
-        return [
-            ["{0}\tJenkins Directive".format(directive['name']),
-             "{0} {{\n\t$0\n}}".format(directive['name'])]
-            for directive in jenkins_data['directives']
-        ]
+        completions = []
+        for directive in jenkins_data['directives']:
+            # Check if directive has inner instructions
+            if directive.get('innerInstructions'):
+                # Add hint about available inner instructions
+                inner_list = ", ".join(directive['innerInstructions'][:3])
+                if len(directive['innerInstructions']) > 3:
+                    inner_list += "..."
+                trigger = "{0}\tJenkins Directive ({1})".format(directive['name'], inner_list)
+                # Add a comment hint in the snippet
+                contents = "{0} {{\n\t${{1:// {2}}}\n}}".format(
+                    directive['name'],
+                    ", ".join(directive['innerInstructions'])
+                )
+            else:
+                trigger = "{0}\tJenkins Directive".format(directive['name'])
+                contents = "{0} {{\n\t$0\n}}".format(directive['name'])
+
+            completions.append([trigger, contents])
+        return completions
 
     def _get_post_completions(self):
         """Get completions for post conditions"""
-        post_conditions = ['always', 'changed', 'fixed', 'regression', 'aborted',
-                         'failure', 'success', 'unstable', 'unsuccessful', 'cleanup']
+        # Extract post conditions from jenkins_data
+        post_section = next((s for s in jenkins_data['sections']
+                           if s['name'] == 'post'), None)
+
+        if not post_section or not post_section.get('innerInstructions'):
+            # Fallback to hardcoded values if data not found
+            post_conditions = ['always', 'changed', 'fixed', 'regression', 'aborted',
+                             'failure', 'success', 'unstable', 'unsuccessful', 'cleanup']
+        else:
+            post_conditions = post_section['innerInstructions']
 
         return [
             ["{0}\tPost Condition".format(condition),
              "{0} {{\n\t$0\n}}".format(condition)]
             for condition in post_conditions
         ]
+
+    def _get_parameter_completions(self, line_up_to_cursor):
+        """Get parameter completions when inside a function call"""
+        # Match pattern like "functionName(" or "functionName(param1: 'value', "
+        # Get the first word preceding a space or parenthesis, after the last opening brace
+        match = re.search(r'\{?\s*(\w+)\s*[( ](?!.*[\{(])', line_up_to_cursor)
+        if not match:
+            return []
+
+        function_name = match.group(1)
+
+        # Find the instruction by command name
+        instruction = next((i for i in jenkins_data['instructions']
+                          if i['command'] == function_name), None)
+
+        if not instruction or not instruction.get('parameters'):
+            return []
+
+        # Build parameter completions
+        completions = []
+        for param in instruction['parameters']:
+            optional_label = "(Optional)" if param.get('isOptional') else ""
+            param_type = param.get('type', 'Unknown')
+
+            # Build the description
+            desc_parts = []
+            if param.get('values'):
+                desc_parts.append("Values: " + ", ".join(param['values']))
+            if param.get('description'):
+                desc_parts.append(param['description'])
+            description = " - ".join(desc_parts) if desc_parts else ""
+
+            # Build the insertion text based on type
+            if param_type == 'String':
+                insert_text = "{0}: '${{1}}'".format(param['name'])
+            elif param_type == 'boolean':
+                insert_text = "{0}: ${{1:true}}".format(param['name'])
+            elif param_type == 'Enum' and param.get('values'):
+                # For enum, just provide the parameter name and let user type
+                # Sublime doesn't support choice snippets like VS Code
+                insert_text = "{0}: '${{1}}'".format(param['name'])
+            else:
+                insert_text = "{0}: ".format(param['name'])
+
+            # Format: [trigger\tDescription, contents]
+            trigger = "{0}\t{1} {2}".format(param['name'], param_type, optional_label)
+            completions.append([trigger, insert_text])
+
+        return completions
 
     def _is_inside_post_block(self, view, point):
         """Check if cursor is inside a post{} block"""
@@ -354,3 +520,199 @@ class JenkinsCompletionsCommand(sublime_plugin.EventListener):
             pos += 1
 
         return brace_count > 0
+
+class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
+    """Provide go-to-definition functionality for Groovy functions"""
+
+    def on_hover(self, view, point, hover_zone):
+        """Show definition link on hover"""
+        if hover_zone != sublime.HOVER_TEXT:
+            return
+
+        if not is_jenkins_file(view):
+            return
+
+        # Check if Ctrl/Cmd is pressed (for goto definition hint)
+        # We'll provide the definition link in the popup
+        word_region = view.word(point)
+        if not word_region:
+            return
+
+        word = view.substr(word_region)
+
+        # Expand to capture object.method pattern
+        extended_region = view.expand_by_class(
+            point,
+            sublime.CLASS_WORD_START | sublime.CLASS_WORD_END,
+            "._"
+        )
+        extended_word = view.substr(extended_region)
+
+        # Only show for word.word pattern (like fileName.functionName)
+        if '.' in extended_word:
+            parts = extended_word.split('.')
+            if len(parts) == 2:
+                file_name, function_name = parts
+                # Show a hint that definition can be navigated
+                link_html = '<a href="goto:{0}:{1}">Go to definition of {2}</a>'.format(
+                    file_name, function_name, extended_word
+                )
+                view.show_popup(
+                    link_html,
+                    flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY,
+                    location=point,
+                    on_navigate=lambda href: self._handle_goto(view, href)
+                )
+
+    def _handle_goto(self, view, href):
+        """Handle goto definition navigation"""
+        if not href.startswith('goto:'):
+            return
+
+        # Parse the href (format: "goto:fileName:functionName")
+        parts = href[5:].split(':')
+        if len(parts) == 2:
+            file_name, function_name = parts
+            self._goto_definition(view, file_name, function_name)
+        else:
+            # Single word goto
+            self._goto_definition(view, parts[0], None)
+
+    def _goto_definition(self, view, file_or_function, function_name=None):
+        """Navigate to the definition of a function or file"""
+        window = view.window()
+        if not window:
+            return
+
+        if function_name:
+            # Pattern: fileName.functionName
+            # Search for fileName.groovy and look for functionName in it
+            self._find_function_in_files(window, file_or_function, function_name)
+        else:
+            # Single word: check current file first, then look for file
+            if self._find_function_in_current_file(view, file_or_function):
+                return
+            # Look for a file with this name
+            self._find_and_open_file(window, file_or_function)
+
+    def _find_function_in_current_file(self, view, function_name):
+        """Search for function definition in the current file"""
+        content = view.substr(sublime.Region(0, view.size()))
+
+        # Regex to match Groovy function declarations
+        # Matches: def functionName(...) { or void functionName(...) {
+        pattern = r'\b(?:def|void|String|int|boolean|Object|[\w<>]+)\s+{0}\s*\([^{{}}]*?\)\s*\{{'.format(
+            re.escape(function_name)
+        )
+
+        match = re.search(pattern, content, re.MULTILINE | re.DOTALL)
+        if match:
+            # Calculate line number
+            line_num = content[:match.start()].count('\n')
+            point = view.text_point(line_num, 0)
+
+            # Move cursor and center view
+            view.sel().clear()
+            view.sel().add(sublime.Region(point))
+            view.show_at_center(point)
+            return True
+
+        return False
+
+    def _find_function_in_files(self, window, file_name, function_name):
+        """Search for function definition across .groovy files"""
+        # Get all .groovy files in the project
+        folders = window.folders()
+        if not folders:
+            sublime.status_message("No project folder open")
+            return
+
+        # Search for the file
+        for folder in folders:
+            groovy_files = []
+            for root, dirs, files in os.walk(folder):
+                for file in files:
+                    if file.endswith('.groovy') or file == file_name + '.groovy':
+                        groovy_files.append(os.path.join(root, file))
+
+            # Search in each groovy file
+            for file_path in groovy_files:
+                if self._find_and_open_function_in_file(window, file_path, function_name):
+                    return
+
+        sublime.status_message("Definition not found: {0} in {1}.groovy".format(
+            function_name, file_name
+        ))
+
+    def _find_and_open_file(self, window, file_name):
+        """Find and open a .groovy file by name"""
+        folders = window.folders()
+        if not folders:
+            sublime.status_message("No project folder open")
+            return
+
+        for folder in folders:
+            for root, dirs, files in os.walk(folder):
+                for file in files:
+                    if file == file_name + '.groovy' or file == file_name:
+                        file_path = os.path.join(root, file)
+                        window.open_file(file_path)
+                        return
+
+        sublime.status_message("File not found: {0}.groovy".format(file_name))
+
+    def _find_and_open_function_in_file(self, window, file_path, function_name):
+        """Open file and navigate to function definition"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            # Search for function definition
+            pattern = r'\b(?:def|void|String|int|boolean|Object|[\w<>]+)\s+{0}\s*\([^{{}}]*?\)\s*\{{'.format(
+                re.escape(function_name)
+            )
+
+            match = re.search(pattern, content, re.MULTILINE | re.DOTALL)
+            if match:
+                line_num = content[:match.start()].count('\n')
+                # Open file at the specific line
+                window.open_file(
+                    "{0}:{1}:0".format(file_path, line_num + 1),
+                    sublime.ENCODED_POSITION
+                )
+                return True
+        except Exception as e:
+            print("Error reading file {0}: {1}".format(file_path, str(e)))
+
+        return False
+
+
+class JenkinsDocShowCommand(sublime_plugin.WindowCommand):
+    """Show Jenkins Documentation plugin information"""
+
+    def run(self):
+        """Display plugin information dialog"""
+        message = """Jenkins Documentation for Sublime Text
+
+Version: {version}
+Original Extension: JenkinsDocExtension by Maarti
+
+Features:
+• Hover documentation for Jenkins Pipeline steps
+• Autocompletion for instructions, sections, and directives
+• Environment variable completion (env.)
+• Parameter autocompletion for function calls
+• Go to definition for Groovy functions
+• Smart snippets with enum values
+• Post-condition block detection
+
+Usage:
+- Hover over Jenkins keywords to see documentation
+- Type to get autocompletion suggestions
+- Use Ctrl/Cmd+Click to go to function definitions
+
+For more information, visit:
+https://github.com/Maarti/JenkinsDocExtension
+""".format(version=__version__)
+
+        sublime.message_dialog(message)

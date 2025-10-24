@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+*.cache
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Scraper
+scraper/venv/
+scraper/__pycache__/
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# IDE
+.vscode/
+.idea/
