@@ -6,6 +6,7 @@ for Jenkins Pipeline syntax.
 
 Version: 1.0.0
 Author: Tsahi Elkayam
+LinkedIn: https://www.linkedin.com/in/etsahi/
 Repository: https://github.com/Tsahi-Elkayam/JenkinsDoc
 License: GPL-3.0
 Inspired by: JenkinsDocExtension for VSCode by Ryan Martinet (Maarti)
@@ -13,6 +14,7 @@ Inspired by: JenkinsDocExtension for VSCode by Ryan Martinet (Maarti)
 
 __version__ = '1.0.0'
 __author__ = 'Tsahi Elkayam'
+__linkedin__ = 'https://www.linkedin.com/in/etsahi/'
 __license__ = 'GPL-3.0'
 __repository__ = 'https://github.com/Tsahi-Elkayam/JenkinsDoc'
 
@@ -391,83 +393,168 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
             html += '<a href="{0}" class="doc-link">📘 View Documentation</a>'.format(directive['url'])
         return html
 
-class JenkinsCompletionsCommand(sublime_plugin.EventListener):
+class JenkinsCompletions(sublime_plugin.EventListener):
     """Provide autocompletions for Jenkins keywords"""
 
     def on_query_completions(self, view, prefix, locations):
-        # Check if completions are enabled
-        if not settings or not settings.get('enable_autocompletion', True):
-            return None
+        # Always log when called in debug mode
+        if settings and settings.get('debug_mode', False):
+            print("=== JenkinsDoc: on_query_completions called ===")
+            print("  Prefix: '{}'".format(prefix))
+            print("  File: {}".format(view.file_name()))
 
-        # Only activate for Groovy files and Jenkinsfiles
-        if not is_jenkins_file(view):
-            return None
+        try:
+            # Check if it's a Jenkins file
+            if not is_jenkins_file(view):
+                if settings and settings.get('debug_mode', False):
+                    print("  Not a Jenkins file - returning None")
+                return None
 
-        completions = []
+            if settings and settings.get('debug_mode', False):
+                print("  Is Jenkins file - building completions")
 
-        # Get current line up to cursor
-        point = locations[0]
-        line_region = view.line(point)
-        line_start = line_region.begin()
-        line_up_to_cursor = view.substr(sublime.Region(line_start, point))
+            # Start with ALL completions
+            completions = []
 
-        # Get previous line for multi-line context awareness
-        previous_line = ""
-        current_line_num = view.rowcol(point)[0]
-        if current_line_num > 0:
-            previous_line_region = view.line(view.text_point(current_line_num - 1, 0))
-            previous_line = view.substr(previous_line_region)
+            # Priority/common completions that should always appear first
+            priority_commands = {
+                'echo': "echo '${1:message}'",
+                'sh': "sh '${1:script}'",
+                'git': "git url: '${1:url}'",
+                'checkout': "checkout scm",
+                'stage': "stage('${1:name}') {\n\t${0}\n}",
+                'steps': "steps {\n\t${0}\n}",
+                'pipeline': "pipeline {\n\t${0}\n}",
+                'agent': "agent ${1:any}",
+                'node': "node('${1:label}') {\n\t${0}\n}",
+                'script': "script {\n\t${0}\n}",
+                'bat': "bat '${1:script}'",
+                'powershell': "powershell '${1:script}'",
+                'pwd': "pwd()",
+                'dir': "dir('${1:path}') {\n\t${0}\n}",
+                'deleteDir': "deleteDir()",
+                'error': "error '${1:message}'",
+                'unstable': "unstable '${1:message}'",
+                'retry': "retry(${1:3}) {\n\t${0}\n}",
+                'timeout': "timeout(time: ${1:1}, unit: '${2:HOURS}') {\n\t${0}\n}",
+                'waitUntil': "waitUntil {\n\t${0}\n}",
+                'sleep': "sleep ${1:60}",
+                'input': "input '${1:Proceed?}'",
+                'parallel': "parallel {\n\t${0}\n}",
+                'when': "when {\n\t${0}\n}",
+                'post': "post {\n\t${0}\n}"
+            }
 
-        # Combine previous and current line for context-aware matching
-        lines_prefix = previous_line + '\n' + line_up_to_cursor
+            # Add priority completions first (these will appear at top)
+            for cmd, snippet in priority_commands.items():
+                # Only add if it matches the prefix (if there is one)
+                if not prefix or cmd.lower().startswith(prefix.lower()):
+                    completions.append(["{}\tJenkins".format(cmd), snippet])
 
-        # Check if we're inside a function call for parameter completion
-        param_completions = self._get_parameter_completions(line_up_to_cursor)
-        if param_completions:
-            return (param_completions, sublime.INHIBIT_WORD_COMPLETIONS)
+            # Try to add full completions if data is loaded
+            if jenkins_data and jenkins_data.get('instructions'):
+                if settings and settings.get('debug_mode', False):
+                    print("  Adding {} instructions from jenkins_data".format(len(jenkins_data['instructions'])))
 
-        # Check if we're after 'env.' using regex pattern (more precise than string search)
-        # Pattern matches "env." at the end of the line, optionally followed by partial word
-        if re.search(r'(env)\.\w*$', line_up_to_cursor):
-            # User already typed "env.", so only insert the variable name
-            return (self._get_env_completions(include_prefix=False), sublime.INHIBIT_WORD_COMPLETIONS)
+                # Get current context
+                point = locations[0]
+                line_region = view.line(point)
+                line_start = line_region.begin()
+                line_up_to_cursor = view.substr(sublime.Region(line_start, point))
 
-        # Check if we're inside a post block (using multi-line context)
-        if re.search(r'post\s*\{\s*\w*$', lines_prefix):
-            return (self._get_post_completions(), sublime.INHIBIT_WORD_COMPLETIONS)
+                # Check for special contexts
+                if re.search(r'env\.\w*$', line_up_to_cursor):
+                    # Environment variable completions
+                    env_completions = self._get_env_completions(include_prefix=False)
+                    if env_completions:
+                        if settings and settings.get('debug_mode', False):
+                            print("  Returning {} env completions".format(len(env_completions)))
+                        return (env_completions, sublime.INHIBIT_WORD_COMPLETIONS)
 
-        # Fallback to checking with full document context
-        if self._is_inside_post_block(view, point):
-            return (self._get_post_completions(), sublime.INHIBIT_WORD_COMPLETIONS)
+                # Add full instruction completions (filtered by prefix)
+                # But limit them for very short prefixes to avoid overwhelming
+                instruction_completions = self._get_instruction_completions(prefix)
+                if instruction_completions:
+                    # For single character prefixes, limit to avoid too many results
+                    if len(prefix) == 1:
+                        # Only add first 50 instruction completions for single char
+                        completions.extend(instruction_completions[:50])
+                    else:
+                        # Add all matching completions for longer prefixes
+                        completions.extend(instruction_completions)
 
-        # Add all other completions (including env with "env." prefix)
-        completions.extend(self._get_instruction_completions())
-        completions.extend(self._get_section_completions())
-        completions.extend(self._get_directive_completions())
-        completions.extend(self._get_env_completions(include_prefix=True))
+                # Add sections and directives (only if they match prefix)
+                section_completions = []
+                for section in jenkins_data.get('sections', []):
+                    if not prefix or section['name'].lower().startswith(prefix.lower()):
+                        section_completions.append([
+                            "{}\tJenkins Section".format(section['name']),
+                            "{} {{\n\t$0\n}}".format(section['name'])
+                        ])
+                completions.extend(section_completions)
 
-        # Limit completions if configured
-        max_completions = settings.get('max_completions', 100) if settings else 100
-        if len(completions) > max_completions:
-            completions = completions[:max_completions]
+                directive_completions = []
+                for directive in jenkins_data.get('directives', []):
+                    if not prefix or directive['name'].lower().startswith(prefix.lower()):
+                        directive_completions.append([
+                            "{}\tJenkins Directive".format(directive['name']),
+                            "{} {{\n\t$0\n}}".format(directive['name'])
+                        ])
+                completions.extend(directive_completions)
 
-        # Determine if we should inhibit word completions
-        flags = sublime.INHIBIT_WORD_COMPLETIONS if settings and settings.get('inhibit_word_completions', True) else 0
-        return (completions, flags)
+            # Debug output
+            if settings and settings.get('debug_mode', False):
+                print("  Total completions: {}".format(len(completions)))
+                if len(completions) > 0:
+                    print("  First 3 completions:")
+                    for c in completions[:3]:
+                        print("    - {}".format(c[0]))
 
-    def _get_instruction_completions(self):
+            # Return completions
+            if completions:
+                return (completions, sublime.INHIBIT_WORD_COMPLETIONS)
+            else:
+                if settings and settings.get('debug_mode', False):
+                    print("  No completions - returning None")
+                return None
+
+        except Exception as e:
+            print("JenkinsDoc ERROR in on_query_completions: {}".format(str(e)))
+            import traceback
+            traceback.print_exc()
+            # Return basic completions on error
+            return ([
+                ["echo\tJenkins", "echo '${1:message}'"],
+                ["sh\tJenkins", "sh '${1:script}'"]
+            ], sublime.INHIBIT_WORD_COMPLETIONS)
+
+    def _get_instruction_completions(self, prefix=""):
         """Get completions for Jenkins instructions"""
         completions = []
+        if not jenkins_data or not jenkins_data.get('instructions'):
+            if settings and settings.get('debug_mode', False):
+                print("JenkinsDoc: No instructions data available")
+            return completions
+
+        # Filter by prefix if provided
         for instruction in jenkins_data['instructions']:
-            trigger = instruction['command']
-            if instruction['parameters']:
-                contents = "{0}(${{1}})".format(instruction['command'])
+            command = instruction['command']
+
+            # Skip if doesn't match prefix
+            if prefix and not command.lower().startswith(prefix.lower()):
+                continue
+
+            if instruction.get('parameters'):
+                contents = "{0}(${{1}})".format(command)
             else:
-                contents = "{0}()".format(instruction['command'])
+                contents = "{0}()".format(command)
 
             completions.append(
-                ["{0}\tJenkins Step".format(trigger), contents]
+                ["{0}\tJenkins Step".format(command), contents]
             )
+
+        if settings and settings.get('debug_mode', False):
+            print("JenkinsDoc: Created {} instruction completions (filtered by '{}')".format(len(completions), prefix))
         return completions
 
     def _get_env_completions(self, include_prefix=False):
@@ -863,3 +950,115 @@ class JenkinsDocReloadCommand(sublime_plugin.WindowCommand):
             sublime.status_message("JenkinsDoc: Failed to reload data")
             if settings.get('show_console_messages', True):
                 print("JenkinsDoc: Failed to reload data")
+
+
+class JenkinsDocTestCompletionsCommand(sublime_plugin.WindowCommand):
+    """Test command to verify completions are working"""
+
+    def run(self):
+        """Test completions"""
+        view = self.window.active_view()
+        if not view:
+            sublime.message_dialog("No active view")
+            return
+
+        # Force create some test completions
+        test_completions = [
+            ["echo\tJenkins Step", "echo '${1:message}'"],
+            ["git\tJenkins Step", "git(url: '${1:url}')"],
+            ["sh\tJenkins Step", "sh '${1:script}'"],
+            ["stage\tJenkins Section", "stage('${1:name}') {\n\t$0\n}"],
+            ["pipeline\tJenkins Section", "pipeline {\n\t$0\n}"]
+        ]
+
+        # Get current cursor position
+        sel = view.sel()[0]
+        point = sel.begin()
+
+        # Show completions at cursor
+        view.run_command('auto_complete', {
+            'disable_auto_insert': True,
+            'api_completions_only': False,
+            'next_completion_if_showing': False
+        })
+
+        sublime.message_dialog(
+            "Test completions triggered!\n\n"
+            "If you don't see completions, try:\n"
+            "1. Enable debug mode in settings\n"
+            "2. Check View → Show Console for errors\n"
+            "3. Make sure file is .groovy or Jenkinsfile"
+        )
+
+
+class JenkinsDocDiagnosticsCommand(sublime_plugin.WindowCommand):
+    """Show diagnostics for JenkinsDoc plugin"""
+
+    def run(self):
+        """Display diagnostic information"""
+        view = self.window.active_view()
+
+        # Gather diagnostic info
+        diagnostics = []
+        diagnostics.append("=== JenkinsDoc Diagnostics ===\n")
+
+        # Plugin version
+        diagnostics.append("Version: {}\n".format(__version__))
+
+        # Data status
+        if jenkins_data:
+            diagnostics.append("Data loaded: Yes")
+            diagnostics.append("  - Plugins: {}".format(len(jenkins_data.get('plugins', []))))
+            diagnostics.append("  - Instructions: {}".format(len(jenkins_data.get('instructions', []))))
+            diagnostics.append("  - Sections: {}".format(len(jenkins_data.get('sections', []))))
+            diagnostics.append("  - Directives: {}".format(len(jenkins_data.get('directives', []))))
+            diagnostics.append("  - Environment Variables: {}\n".format(len(jenkins_data.get('environmentVariables', []))))
+        else:
+            diagnostics.append("Data loaded: No (ERROR!)\n")
+
+        # Settings status
+        if settings:
+            diagnostics.append("Settings loaded: Yes")
+            diagnostics.append("  - Enabled: {}".format(settings.get('enabled', True)))
+            diagnostics.append("  - Autocompletion: {}".format(settings.get('enable_autocompletion', True)))
+            diagnostics.append("  - Hover docs: {}".format(settings.get('show_hover_docs', True)))
+            diagnostics.append("  - Status bar: {}".format(settings.get('show_status_bar', True)))
+            diagnostics.append("  - Debug mode: {}\n".format(settings.get('debug_mode', False)))
+        else:
+            diagnostics.append("Settings loaded: No\n")
+
+        # Current file detection
+        if view:
+            file_name = view.file_name() or "Untitled"
+            syntax = view.syntax()
+            syntax_name = syntax.name if syntax else "None"
+            is_jenkins = is_jenkins_file(view)
+
+            diagnostics.append("Current file: {}".format(file_name))
+            diagnostics.append("Syntax: {}".format(syntax_name))
+            diagnostics.append("Detected as Jenkins file: {}\n".format("Yes" if is_jenkins else "No"))
+
+        # Sample completions test
+        if jenkins_data and jenkins_data.get('instructions'):
+            sample_instructions = list(jenkins_data['instructions'][:3])
+            diagnostics.append("Sample instructions:")
+            for inst in sample_instructions:
+                diagnostics.append("  - {}".format(inst.get('command', 'Unknown')))
+
+        # Show in console
+        output = "\n".join(diagnostics)
+        print(output)
+
+        # Copy to clipboard
+        sublime.set_clipboard(output)
+
+        # Also show in message dialog with clipboard note
+        sublime.message_dialog(output + "\n\n(Diagnostics copied to clipboard)")
+
+
+class OpenUrlCommand(sublime_plugin.ApplicationCommand):
+    """Command to open URLs in the default browser"""
+    def run(self, url):
+        """Open URL in default browser"""
+        import webbrowser
+        webbrowser.open(url)

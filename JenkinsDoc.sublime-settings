@@ -19,7 +19,8 @@
     "enable_autocompletion": true,
     "inhibit_word_completions": true,  // Disable word-based completions when plugin completions are shown
     "show_completion_hints": true,     // Show hints like "(Optional)" in completions
-    "max_completions": 100,             // Maximum number of completions to show
+    "max_completions": 200,             // Maximum number of completions to show
+    "min_prefix_length": 1,             // Minimum characters before showing completions
 
     // Go to Definition Settings
     "enable_goto_definition": true,
@@ -32,7 +33,7 @@
 
     // Console Logging
     "show_console_messages": true,     // Show loading messages in console
-    "debug_mode": false,               // Show detailed debug messages
+    "debug_mode": false,               // Show detailed debug messages (set to true for troubleshooting)
 
     // Data Loading
     "data_file": "jenkins_data.json",  // Name of the data file

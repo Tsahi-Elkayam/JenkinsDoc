@@ -1,0 +1,11 @@
+{
+    "exclude": [
+        ".git*",
+        ".github",
+        "scraper",
+        "Jenkinsfile",
+        "test*.groovy",
+        "*.pyc",
+        "__pycache__"
+    ]
+}

@@ -3,8 +3,12 @@
 A comprehensive Jenkins Pipeline documentation and autocompletion plugin for Sublime Text.
 
 **Author:** Tsahi Elkayam
-**Repository:** https://github.com/Tsahi-Elkayam/JenkinsDoc
+**LinkedIn:** [https://www.linkedin.com/in/etsahi/](https://www.linkedin.com/in/etsahi/)
+**Repository:** [https://github.com/Tsahi-Elkayam/JenkinsDoc](https://github.com/Tsahi-Elkayam/JenkinsDoc)
 **License:** GPL-3.0
+
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=github)](https://github.com/sponsors/Tsahi-Elkayam)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support%20Development-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/tsahi.elkayam)
 
 Inspired by the [JenkinsDocExtension](https://marketplace.visualstudio.com/items?itemName=Maarti.jenkins-doc) for VS Code by Ryan Martinet (Maarti).
 
@@ -274,6 +278,23 @@ GPL-3.0 License - Same as the original JenkinsDocExtension
 - ✅ Python documentation scraper
 - ✅ Comprehensive test coverage
 - ✅ 100% feature parity with VS Code extension achieved!
+
+---
+
+## 💖 Support the Project
+
+If you find JenkinsDoc helpful and want to support its continued development, you can:
+
+### GitHub Sponsors (Recommended for recurring support)
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=github)](https://github.com/sponsors/Tsahi-Elkayam)
+
+### Buy Me a Coffee (For one-time tips)
+[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://buymeacoffee.com/tsahi.elkayam)
+
+### PayPal (Direct donation)
+[![PayPal](https://img.shields.io/badge/Donate-PayPal-blue?style=for-the-badge&logo=paypal)](https://paypal.me/etsahi)
+
+Your support helps me maintain the plugin, add new features, and create more developer tools!
 
 ---
 

@@ -4,6 +4,14 @@
         "command": "jenkins_doc_show"
     },
     {
+        "caption": "Jenkins: Show Diagnostics",
+        "command": "jenkins_doc_diagnostics"
+    },
+    {
+        "caption": "Jenkins: Test Completions",
+        "command": "jenkins_doc_test_completions"
+    },
+    {
         "caption": "Jenkins: Reload Settings and Data",
         "command": "jenkins_doc_reload"
     },

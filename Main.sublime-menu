@@ -61,6 +61,41 @@
                             {
                                 "command": "jenkins_doc_show",
                                 "caption": "About JenkinsDoc"
+                            },
+                            { "caption": "-" },
+                            {
+                                "caption": "Support JenkinsDoc",
+                                "children": [
+                                    {
+                                        "caption": "GitHub Sponsors (Recommended)",
+                                        "command": "open_url",
+                                        "args": {
+                                            "url": "https://github.com/sponsors/Tsahi-Elkayam"
+                                        }
+                                    },
+                                    {
+                                        "caption": "Buy Me a Coffee",
+                                        "command": "open_url",
+                                        "args": {
+                                            "url": "https://buymeacoffee.com/tsahi.elkayam"
+                                        }
+                                    },
+                                    {
+                                        "caption": "PayPal Donation",
+                                        "command": "open_url",
+                                        "args": {
+                                            "url": "https://paypal.me/etsahi"
+                                        }
+                                    },
+                                    { "caption": "-" },
+                                    {
+                                        "caption": "Star on GitHub",
+                                        "command": "open_url",
+                                        "args": {
+                                            "url": "https://github.com/Tsahi-Elkayam/JenkinsDoc"
+                                        }
+                                    }
+                                ]
                             }
                         ]
                     }
