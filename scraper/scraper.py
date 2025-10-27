@@ -7,43 +7,52 @@ Scrapes Jenkins Pipeline documentation from jenkins.io and generates jenkins_dat
 import json
 import os
 import re
+import sys
 import time
 from datetime import datetime
 from typing import List, Dict, Any
 import requests
 from bs4 import BeautifulSoup
 
-# Configuration
-JENKINS_BASE_URL = 'https://www.jenkins.io'
-JENKINS_REFERENCE_URL = f'{JENKINS_BASE_URL}/doc/pipeline/steps/'
-OUTPUT_FILE = '../jenkins_data.json'
-OUTPUT_FILE_FORMATTED = '../jenkins_data_formatted.json'  # Optional formatted version
-REQUEST_DELAY = 0.1  # Delay between requests to avoid overwhelming the server
-SAVE_FORMATTED_VERSION = False  # Set to True if you want both minified and formatted versions
 
-# Environment variables (static data)
-ENVIRONMENT_VARIABLES = [
-    {"name": "BUILD_NUMBER", "description": "The current build number"},
-    {"name": "BUILD_ID", "description": "The current build ID"},
-    {"name": "BUILD_DISPLAY_NAME", "description": "Display name of the current build"},
-    {"name": "JOB_NAME", "description": "Name of the project of this build"},
-    {"name": "BUILD_TAG", "description": "String of jenkins-${JOB_NAME}-${BUILD_NUMBER}"},
-    {"name": "EXECUTOR_NUMBER", "description": "The unique number that identifies the current executor"},
-    {"name": "NODE_NAME", "description": "Name of the node the current build is running on"},
-    {"name": "NODE_LABELS", "description": "Whitespace-separated list of labels assigned to the node"},
-    {"name": "WORKSPACE", "description": "The absolute path of the workspace"},
-    {"name": "JENKINS_HOME", "description": "The absolute path on the master node for Jenkins to store data"},
-    {"name": "JENKINS_URL", "description": "Full URL of Jenkins"},
-    {"name": "BUILD_URL", "description": "Full URL of this build"},
-    {"name": "JOB_URL", "description": "Full URL of this job"},
-]
+def load_config(config_path='config.json'):
+    """Load configuration from JSON file"""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_file = os.path.join(script_dir, config_path)
+
+    if not os.path.exists(config_file):
+        print(f"Error: Configuration file not found: {config_file}")
+        print(f"Please ensure config.json exists in the scraper directory.")
+        sys.exit(1)
+
+    try:
+        with open(config_file, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON in configuration file: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error loading configuration: {e}")
+        sys.exit(1)
+
+
+# Load configuration
+CONFIG = load_config()
+JENKINS_BASE_URL = CONFIG['jenkins_base_url']
+JENKINS_REFERENCE_URL = f"{JENKINS_BASE_URL}/doc/pipeline/steps/"
+OUTPUT_FILE = CONFIG['output_file']
+OUTPUT_FILE_FORMATTED = CONFIG['output_file_formatted']
+REQUEST_DELAY = CONFIG['request_delay']
+SAVE_FORMATTED_VERSION = CONFIG['save_formatted_version']
+USER_AGENT = CONFIG['user_agent']
+ENVIRONMENT_VARIABLES = CONFIG['environment_variables']
 
 
 class JenkinsScraper:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': USER_AGENT
         })
         self.jenkins_data = {
             'date': datetime.now().isoformat(),

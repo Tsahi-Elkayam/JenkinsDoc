@@ -7,6 +7,28 @@ __pycache__/
 venv/
 ENV/
 env/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Python testing and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Python type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
 
 # Sublime Text
 *.sublime-project
@@ -18,10 +40,6 @@ env/
 Thumbs.db
 desktop.ini
 
-# Scraper
-scraper/venv/
-scraper/__pycache__/
-
 # Backup files
 *.backup
 *.bak
@@ -30,3 +48,35 @@ scraper/__pycache__/
 # IDE
 .vscode/
 .idea/
+
+# Code editor temporary files
+.claude/
+.claude-*
+*.claude-code
+.anthropic/
+
+# Test outputs and artifacts
+test-results/
+test-output/
+.test-cache/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Package Control (Sublime Text)
+.sublime-package-control
+
+# Data backups (if any)
+jenkins_data_formatted.json
+
+# Environment files (if containing secrets)
+.env
+.env.*
+!.env.example

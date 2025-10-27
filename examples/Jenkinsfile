@@ -1,0 +1,105 @@
+// Example Jenkins Pipeline
+// Open this in Sublime Text with JenkinsDoc installed to try out the features
+
+pipeline {
+    agent any
+
+    environment {
+        // Type "env." here to see all available Jenkins environment variables
+        // Try BUILD_NUMBER, JOB_NAME, WORKSPACE, etc.
+        VERSION = "1.2.${env.BUILD_NUMBER}"
+        DEPLOY_ENV = 'staging'
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                echo "Building version ${VERSION}..."
+
+                // Hover your mouse over "sh" to see documentation
+                sh 'npm install'
+                sh 'npm run build'
+
+                // Try typing "dir" and press Tab for autocomplete
+                dir('dist') {
+                    sh 'ls -la'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo "Running tests..."
+
+                // Type "timeout" and watch parameter hints appear
+                timeout(time: 10, unit: 'MINUTES') {
+                    sh 'npm test'
+                }
+
+                // Try hovering over "parallel" to see docs
+                parallel {
+                    stage('Unit Tests') {
+                        steps {
+                            sh 'npm run test:unit'
+                        }
+                    }
+                    stage('Integration Tests') {
+                        steps {
+                            sh 'npm run test:integration'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+
+            steps {
+                echo "Deploying to ${DEPLOY_ENV}..."
+
+                // Type "input(" to see parameter suggestions
+                input message: 'Deploy to production?', ok: 'Deploy'
+
+                script {
+                    // Custom logic here
+                    if (env.BRANCH_NAME == 'main') {
+                        sh './deploy-prod.sh'
+                    } else {
+                        sh './deploy-staging.sh'
+                    }
+                }
+
+                // Try typing "retry" and Tab
+                retry(3) {
+                    sh 'verify-deployment.sh'
+                }
+            }
+        }
+    }
+
+    // Inside post blocks, start typing condition names and you'll get suggestions
+    // Try "success", "failure", "always", etc.
+    post {
+        success {
+            echo "Build succeeded!"
+        }
+
+        failure {
+            echo "Build failed at ${env.BUILD_URL}"
+        }
+
+        always {
+            echo "Cleaning up..."
+            deleteDir()
+        }
+    }
+}
+
+// Want to test more features?
+// - Hover over ANY keyword (pipeline, agent, echo, sh, etc)
+// - Type partial command names and press Ctrl+Space
+// - Press Ctrl+Shift+P and type "Jenkins" to see plugin commands
+// - Check the README in this folder for troubleshooting tips

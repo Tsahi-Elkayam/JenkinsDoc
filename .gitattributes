@@ -1,5 +1,0 @@
-.git* export-ignore
-.github export-ignore
-scraper export-ignore
-*.pyc export-ignore
-__pycache__ export-ignore

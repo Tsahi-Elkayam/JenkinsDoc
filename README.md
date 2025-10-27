@@ -1,187 +1,105 @@
-# Jenkins Documentation for Sublime Text
+# JenkinsDoc - Jenkins Pipeline Documentation for Sublime Text
 
-A comprehensive Jenkins Pipeline documentation and autocompletion plugin for Sublime Text.
+Jenkins Pipeline documentation and autocompletion plugin for Sublime Text.
 
 **Author:** Tsahi Elkayam
-**LinkedIn:** [https://www.linkedin.com/in/etsahi/](https://www.linkedin.com/in/etsahi/)
 **Repository:** [https://github.com/Tsahi-Elkayam/JenkinsDoc](https://github.com/Tsahi-Elkayam/JenkinsDoc)
 **License:** GPL-3.0
 
-[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=github)](https://github.com/sponsors/Tsahi-Elkayam)
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support%20Development-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/tsahi.elkayam)
+Ported from the [JenkinsDocExtension](https://marketplace.visualstudio.com/items?itemName=Maarti.jenkins-doc) for VS Code by Ryan Martinet.
 
-Inspired by the [JenkinsDocExtension](https://marketplace.visualstudio.com/items?itemName=Maarti.jenkins-doc) for VS Code by Ryan Martinet (Maarti).
+## Features
 
-## ✨ Features
+### Hover Documentation
+Hover over Jenkins keywords to see documentation popups with:
+- Step descriptions and parameters
+- Environment variable info
+- Links to official Jenkins docs
+- Parameter types and whether they're optional
 
-### 🔍 Rich Hover Documentation
-Hover over Jenkins keywords to see beautifully formatted documentation:
-- **Jenkins Pipeline steps** with detailed parameter information
-- **Environment variables** with usage examples
-- **Sections & Directives** with context information
-- Parameter types (String, boolean, Enum) and optional/required status
-- Direct links to official Jenkins documentation
+### Autocompletion
+- Type `git` and get `git($1)` with cursor inside parentheses
+- Type `git(` and get parameter suggestions (url, branch, credentialsId, etc.)
+- Type `env.` and get all Jenkins environment variables
+- Type inside `post{}` blocks to get condition completions (always, success, failure, etc.)
+- Multi-line statement support
 
-### ⌨️ Intelligent Autocompletion
+### Go to Definition
+- Hover over custom function calls like `myUtils.deployToProduction()`
+- Click the "Go to definition" link
+- Jumps to the function in your `.groovy` files
 
-#### Parameter Autocompletion
-- Type a function name and open parenthesis: `git(`
-- Get intelligent suggestions for all available parameters
-- Snippets automatically include proper formatting (`url: '$1'`, `branch: true`, etc.)
-- See parameter types and whether they're optional right in the completion menu
+### Status Bar
+Shows "JenkinsDoc" in the status bar when editing Jenkins files.
 
-#### Context-Aware Completions
-- **Environment variables**: Type `env.` → Get all Jenkins environment variables
-- **Post conditions**: Inside `post{}` blocks → Get condition completions (always, success, failure, etc.)
-- **Smart snippets**: Sections/directives with inner instructions show available options
-- **Multi-line detection**: Handles statements spanning multiple lines
+## Installation
 
-### 🎯 Go to Definition
-Navigate to Groovy function definitions across your project:
-- Hover over `fileName.functionName` patterns
-- Click "Go to definition" link in the popup
-- Automatically searches `.groovy` files in your project
-- Jumps directly to the function definition
+### Via Package Control (Recommended)
 
-### 📝 Smart Snippets
-- Sections and directives include inner instruction hints
-- Post blocks show available conditions
-- Parameter completions include type-appropriate snippets
-
-### 🎨 Beautiful UI
-Custom HTML/CSS styling for documentation popups with:
-- Syntax-highlighted code examples
-- Color-coded parameter types
-- Clear visual hierarchy
-- Dark theme that matches Sublime Text
-
-### 📊 Status Bar Indicator
-- Shows "JenkinsDoc" in the status bar when editing Jenkins files
-- Automatically appears for `.groovy` files and `Jenkinsfile`
-- Clears when switching to non-Jenkins files
-- Shows error state if data failed to load
-
-## 📦 Installation
-
-### Package Control (Recommended)
-
-1. Install [Package Control](https://packagecontrol.io/installation) if you haven't already
-2. Open Command Palette (`Ctrl+Shift+P` on Windows/Linux, `Cmd+Shift+P` on macOS)
-3. Type: "Package Control: Install Package"
+1. Install [Package Control](https://packagecontrol.io/installation)
+2. Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+3. Run "Package Control: Install Package"
 4. Search for "JenkinsDoc"
-5. Press Enter to install
+5. Install
 
 ### Manual Installation
 
-1. Download/clone this repository
-2. Copy the `JenkinsDoc` folder to your Sublime Text Packages directory:
-   - **Windows**: `%APPDATA%\Sublime Text\Packages\`
-   - **macOS**: `~/Library/Application Support/Sublime Text/Packages/`
-   - **Linux**: `~/.config/sublime-text/Packages/`
+1. Clone or download this repository
+2. Copy to your Sublime Text Packages folder:
+   - Windows: `%APPDATA%\Sublime Text\Packages\`
+   - macOS: `~/Library/Application Support/Sublime Text/Packages/`
+   - Linux: `~/.config/sublime-text/Packages/`
 3. Restart Sublime Text
 
-## ⚙️ Configuration
+## Configuration
 
-### Access Settings
-1. **Via Menu**: Preferences → Package Settings → JenkinsDoc → Settings (opens both default and user settings side by side)
-2. **Via Command Palette**: "Preferences: JenkinsDoc Settings"
+Access via: Preferences → Package Settings → JenkinsDoc → Settings
 
-### Available Settings
-```javascript
+```json
 {
-    // Core Settings
-    "enabled": true,                      // Enable/disable the plugin
-    "show_status_bar": true,             // Show status bar indicator
-    "status_bar_text": "JenkinsDoc",     // Custom status bar text
-
-    // Hover Documentation
-    "show_hover_docs": true,              // Enable hover popups
-    "hover_popup_max_width": 800,        // Maximum popup width
-    "hover_popup_max_height": 500,       // Maximum popup height
-
-    // Autocompletion
-    "enable_autocompletion": true,       // Enable completions
-    "max_completions": 100,              // Max completions to show
-
-    // File Detection
-    "detect_jenkinsfile": true,          // Detect Jenkinsfile
-    "detect_groovy_files": true,         // Detect .groovy files
-    "additional_file_patterns": []       // Add patterns like ["*.jenkins"]
+    "enabled": true,
+    "show_status_bar": true,
+    "show_hover_docs": true,
+    "enable_autocompletion": true,
+    "detect_jenkinsfile": true,
+    "detect_groovy_files": true,
+    "additional_file_patterns": []
 }
 ```
 
-## 🚀 Usage
+## Usage
 
-### Getting Started
-The plugin automatically activates for:
-- `.groovy` files
-- `Jenkinsfile` (with or without extension)
-- Any additional patterns you configure
+The plugin activates automatically for `.groovy` files and `Jenkinsfile`.
 
-### Autocompletion Examples
+**Autocompletion examples:**
 
-**Basic step completion:**
 ```groovy
 // Type: git
-// Result: git($1)  // Cursor positioned inside parentheses
-```
+// Get: git($1)
 
-**Parameter completion:**
-```groovy
 // Type: git(
 // Get suggestions: url, branch, credentialsId, changelog, poll, etc.
-// Select url → Result: url: '$1'
-```
 
-**Environment variables:**
-```groovy
 // Type: env.
-// Get all variables: BUILD_NUMBER, WORKSPACE, JOB_NAME, etc.
-```
+// Get: BUILD_NUMBER, WORKSPACE, JOB_NAME, etc.
 
-**Post conditions:**
-```groovy
 post {
-    // Type inside here to get: always, success, failure, etc.
+    // Type here to get: always, success, failure, etc.
 }
 ```
 
-### Hover Documentation
-1. Hover mouse over any Jenkins keyword
-2. View rich documentation in popup
-3. Click documentation links to open official Jenkins docs
+## Testing
 
-### Go to Definition
-1. Write code like: `myUtils.deployToProduction()`
-2. Hover over `myUtils.deployToProduction`
-3. Click "Go to definition" in popup
-4. Opens `myUtils.groovy` and jumps to `deployToProduction` function
+The `examples/` folder has test files you can use to verify everything works:
 
-### Commands
-- **Command Palette**: `Jenkins: Show Documentation` - Display plugin information
-- **Menu**: Tools → Jenkins Documentation → Show Documentation
+- `examples/test-Jenkinsfile` - Full test suite with 15+ feature tests
+- `examples/utils.groovy` - Sample functions for testing go-to-definition
 
-## 🎯 Feature Comparison with VS Code Extension
+Open `examples/test-Jenkinsfile` in Sublime and follow the instructions.
 
-| Feature | VS Code Extension | This Plugin | Status |
-|---------|-------------------|-------------|--------|
-| Hover Documentation | ✅ | ✅ | ✅ **Enhanced** with better styling |
-| Basic Autocompletion | ✅ | ✅ | ✅ **100%** |
-| Parameter Autocompletion | ✅ | ✅ | ✅ **100%** |
-| Environment Variable Completion | ✅ | ✅ | ✅ **100%** |
-| Go to Definition | ✅ | ✅ | ✅ **100%** |
-| Smart Snippets with Enums | ✅ | ✅ | ✅ **100%** |
-| Context-Aware Completions | ✅ | ✅ | ✅ **100%** |
-| Multi-line Detection | ✅ | ✅ | ✅ **100%** |
-| Post-block Detection | ✅ | ✅ | ✅ **100%** |
-| Jenkinsfile Support | ✅ | ✅ | ✅ **100%** |
-| Documentation Scraper | ✅ | ✅ | ✅ **Ported to Python** |
+## Updating Documentation Data
 
-**Result: 100% feature parity achieved! 🎉**
-
-## 🛠️ Updating Documentation Data
-
-The plugin includes a Python scraper to fetch the latest Jenkins documentation:
+The plugin includes a scraper to fetch the latest Jenkins documentation:
 
 ```bash
 cd scraper
@@ -189,115 +107,88 @@ pip install requests beautifulsoup4 lxml
 python scraper.py
 ```
 
-This generates an updated `jenkins_data.json` with the latest Jenkins Pipeline documentation.
+This updates `jenkins_data.json` with current Jenkins Pipeline docs. See `scraper/README.md` for configuration options.
 
-See `scraper/README.md` for details.
+## What's Included
 
-## 📚 Supported Jenkins Features
+**Pipeline Steps:** 500+ steps from popular plugins (Git, Docker, Kubernetes, SSH, HTTP, Email, Slack, etc.)
 
-### Pipeline Steps (500+)
-All Jenkins Pipeline steps from popular plugins:
-- Workflow Basic Steps, Git, Docker, Kubernetes
-- SSH, HTTP Request, Email, Slack notifications
-- And 100+ more plugins
+**Environment Variables:** BUILD_NUMBER, BUILD_ID, JOB_NAME, WORKSPACE, JENKINS_URL, and more
 
-### Environment Variables
-`BUILD_NUMBER`, `BUILD_ID`, `JOB_NAME`, `WORKSPACE`, `JENKINS_URL`, and many more
+**Sections:** agent, stages, stage, steps, post
 
-### Sections
-`agent`, `stages`, `stage`, `steps`, `post`
+**Directives:** environment, options, parameters, triggers, tools, input, when
 
-### Directives
-`environment`, `options`, `parameters`, `triggers`, `tools`, `input`, `when`
+**Post Conditions:** always, success, failure, unstable, changed, fixed, regression, aborted, unsuccessful, cleanup
 
-### Post Conditions
-`always`, `success`, `failure`, `unstable`, `changed`, `fixed`, `regression`, `aborted`, `unsuccessful`, `cleanup`
+## Troubleshooting
 
-## 🐛 Troubleshooting
-
-**Completions not showing?**
-- Verify you're in a `.groovy` file or `Jenkinsfile`
-- Try `Ctrl+Space` to manually trigger
-- Check Sublime Text console: `Ctrl+` `
+**No completions showing?**
+- Make sure you're in a `.groovy` file or `Jenkinsfile`
+- Try `Ctrl+Space` to trigger manually
+- Check Sublime console for errors (`Ctrl+\``)
 
 **Hover not working?**
-- Ensure syntax is set to Groovy
-- Verify `jenkins_data.json` exists in plugin directory
+- Set syntax to Groovy if it's not detected automatically
+- Check that `data/jenkins_data.json` exists
 
 **Go to definition not working?**
-- Open your project folder in Sublime Text (Project → Add Folder to Project)
-- Ensure `.groovy` files exist in project
+- Open your project folder in Sublime (Project → Add Folder to Project)
+- Make sure your `.groovy` files are in the project
 
-## 🤝 Contributing
+## Feature Parity with VS Code Extension
 
-Contributions welcome! To contribute:
+This plugin has full feature parity with the original VS Code extension:
 
-1. Fork this repository
-2. Make your changes
-3. Test thoroughly in Sublime Text
-4. Submit a pull request
+| Feature | Implemented |
+|---------|-------------|
+| Hover Documentation | Yes |
+| Basic Autocompletion | Yes |
+| Parameter Autocompletion | Yes |
+| Environment Variable Completion | Yes |
+| Go to Definition | Yes |
+| Smart Snippets with Enums | Yes |
+| Context-Aware Completions | Yes |
+| Multi-line Detection | Yes |
+| Post-block Detection | Yes |
+| Jenkinsfile Support | Yes |
+| Documentation Scraper | Yes (Python) |
 
-### Development Setup
+## Contributing
+
+Fork, make changes, test, and submit a PR. See `contributing.md` for details.
+
+Development setup:
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/JenkinsDoc-Sublime.git
-
-# Symlink to Sublime Text Packages directory
-ln -s $(pwd) "%APPDATA%\Sublime Text\Packages\JenkinsDoc"
-
-# Restart Sublime Text
+git clone https://github.com/Tsahi-Elkayam/JenkinsDoc.git
+cd JenkinsDoc
+pip install -r tests/requirements-dev.txt
 ```
 
-## 📄 License
+## Credits
 
-GPL-3.0 License - Same as the original JenkinsDocExtension
+- Original VS Code extension: [JenkinsDocExtension](https://github.com/Maarti/JenkinsDocExtension) by Ryan Martinet
+- Documentation source: [Jenkins.io](https://www.jenkins.io/doc/pipeline/steps/)
 
-## 🙏 Credits
+## Resources
 
-- **Original Extension**: [JenkinsDocExtension](https://github.com/Maarti/JenkinsDocExtension) by [Ryan Martinet](https://github.com/Maarti)
-- **Documentation Source**: [Jenkins.io](https://www.jenkins.io/doc/pipeline/steps/)
-- **Sublime Text Port**: This project
+Useful resources for Sublime Text plugin development:
 
-## 🔗 Links
+- [OdatNurd YouTube Channel](https://www.youtube.com/@OdatNurd) - Sublime Text plugin tutorials and deep dives
+- [Sublime Text Documentation](https://docs.sublimetext.io/) - Official plugin API docs
+- [Sublime Text Guide](https://www.sublimetext.com/docs/) - User documentation
+- [How to Create Your Own Sublime Text Plugin](https://medium.com/better-programming/how-to-create-your-own-sublime-text-plugin-2731e75f52d5) - Medium tutorial
+- [Plugin Development Basics](https://www.reddit.com/r/SublimeText/comments/4q8m1a/sublime_text_plugin_development_basics/) - Reddit guide
+- [How to Write a Sublime Plugin](https://vinted.engineering/2016/06/27/how-to-write-sublime-plugin/) - Vinted Engineering blog
 
-- [Jenkins Pipeline Documentation](https://www.jenkins.io/doc/book/pipeline/)
-- [Jenkins Pipeline Steps Reference](https://www.jenkins.io/doc/pipeline/steps/)
-- [Original VS Code Extension](https://marketplace.visualstudio.com/items?itemName=Maarti.jenkins-doc)
+## Support
 
-## 📝 Version History
+If this plugin is useful to you, consider supporting development:
 
-### 1.0.0 - Complete Feature Parity Release
-- ✅ Rich hover documentation with enhanced HTML/CSS styling
-- ✅ Smart autocompletion for all Jenkins Pipeline elements
-- ✅ **Parameter autocompletion** inside function calls
-- ✅ **Go to definition** for Groovy functions across files
-- ✅ Context-aware completions with multi-line detection
-- ✅ Smart snippets with enum value hints
-- ✅ Post-condition block detection
-- ✅ Jenkinsfile support (files without extensions)
-- ✅ Python documentation scraper
-- ✅ Comprehensive test coverage
-- ✅ 100% feature parity with VS Code extension achieved!
+- [GitHub Sponsors](https://github.com/sponsors/Tsahi-Elkayam)
+- [Buy Me a Coffee](https://buymeacoffee.com/tsahi.elkayam)
+- [PayPal](https://paypal.me/etsahi)
 
----
+## License
 
-## 💖 Support the Project
-
-If you find JenkinsDoc helpful and want to support its continued development, you can:
-
-### GitHub Sponsors (Recommended for recurring support)
-[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=github)](https://github.com/sponsors/Tsahi-Elkayam)
-
-### Buy Me a Coffee (For one-time tips)
-[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://buymeacoffee.com/tsahi.elkayam)
-
-### PayPal (Direct donation)
-[![PayPal](https://img.shields.io/badge/Donate-PayPal-blue?style=for-the-badge&logo=paypal)](https://paypal.me/etsahi)
-
-Your support helps me maintain the plugin, add new features, and create more developer tools!
-
----
-
-**Happy Jenkins Pipeline coding! 🚀**
-
-If you find this plugin helpful, please ⭐ star the repository!
+GPL-3.0 (same as the original extension)
