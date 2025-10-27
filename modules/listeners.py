@@ -3,12 +3,14 @@ Event listeners for the JenkinsDoc plugin.
 Handles autocompletion, hover documentation, status bar, and go-to-definition.
 """
 
+import html
+import os
+import re
+
 import sublime
 import sublime_plugin
-import re
-import os
-import html
-from .utils import is_jenkins_file, get_jenkins_data, get_settings
+
+from .utils import get_jenkins_data, get_settings, is_jenkins_file
 
 
 class JenkinsDocStatusBar(sublime_plugin.EventListener):

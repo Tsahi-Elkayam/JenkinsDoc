@@ -10,7 +10,8 @@ import re
 import sys
 import time
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 import requests
 from bs4 import BeautifulSoup
 

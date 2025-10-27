@@ -3,8 +3,8 @@ Integration tests for completion functionality
 Tests actual completion logic without mocks
 """
 
-import sys
 import os
+import sys
 import unittest
 from unittest.mock import Mock
 

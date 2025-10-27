@@ -10,8 +10,8 @@ Usage:
     python run_tests.py quality      # Run only quality tests
 """
 
-import sys
 import os
+import sys
 import unittest
 
 # Add parent directory to path

@@ -3,10 +3,10 @@ Validation tests for code documentation
 Ensures all public functions and classes have docstrings
 """
 
-import sys
-import os
-import unittest
 import inspect
+import os
+import sys
+import unittest
 from unittest.mock import Mock
 
 # Add tests directory to path for test_helpers
@@ -19,7 +19,7 @@ sys.modules["sublime_plugin"] = sublime_plugin_mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
-from modules import utils, listeners, diagnostics
+from modules import diagnostics, listeners, utils
 
 
 class TestDocumentation(unittest.TestCase):

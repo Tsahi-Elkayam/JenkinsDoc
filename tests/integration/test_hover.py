@@ -2,8 +2,8 @@
 Integration tests for hover documentation functionality
 """
 
-import sys
 import os
+import sys
 import unittest
 from unittest.mock import Mock
 

@@ -2,8 +2,8 @@
 Integration tests for file detection functionality
 """
 
-import sys
 import os
+import sys
 import unittest
 from unittest.mock import Mock
 

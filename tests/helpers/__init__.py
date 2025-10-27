@@ -4,13 +4,13 @@ Provides shared mock objects and utilities for testing
 """
 
 from .mocks import (
+    MockApplicationCommand,
     MockEventListener,
     MockTextCommand,
     MockWindowCommand,
-    MockApplicationCommand,
+    setup_sublime_mocks,
     sublime_mock,
     sublime_plugin_mock,
-    setup_sublime_mocks,
 )
 
 __all__ = [

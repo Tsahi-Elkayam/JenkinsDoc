@@ -2,8 +2,6 @@
 JenkinsDoc modules package
 """
 
-from . import utils
-from . import listeners
-from . import diagnostics
+from . import diagnostics, listeners, utils
 
 __all__ = ["utils", "listeners", "diagnostics"]

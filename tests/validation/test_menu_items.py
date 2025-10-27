@@ -3,10 +3,10 @@ Validation tests for menu items
 Ensures menu items reference valid commands
 """
 
-import sys
-import os
-import unittest
 import json
+import os
+import sys
+import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 

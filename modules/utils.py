@@ -3,10 +3,11 @@ Utility functions for the JenkinsDoc plugin.
 Handles data loading, file detection, and completion generation.
 """
 
-import sublime
+import fnmatch
 import json
 import os
-import fnmatch
+
+import sublime
 
 # Module-level variables for jenkins data and settings
 _jenkins_data = None

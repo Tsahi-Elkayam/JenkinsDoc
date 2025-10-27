@@ -18,30 +18,31 @@ __linkedin__ = "https://www.linkedin.com/in/etsahi/"
 __license__ = "GPL-3.0"
 __repository__ = "https://github.com/Tsahi-Elkayam/JenkinsDoc"
 
+import webbrowser
+
 import sublime
 import sublime_plugin
-import webbrowser
 
 # Import utilities and listeners from modules
 # Try relative imports first (when loaded as a package), fall back to absolute (for tests)
 try:
     from .modules import utils
+    from .modules.diagnostics import JenkinsDocDiagnosticsCommand, JenkinsDocTestCompletionsCommand
     from .modules.listeners import (
-        JenkinsDocStatusBar,
-        JenkinsDocHoverCommand,
         JenkinsCompletions,
+        JenkinsDocHoverCommand,
+        JenkinsDocStatusBar,
         JenkinsGoToDefinitionCommand,
     )
-    from .modules.diagnostics import JenkinsDocTestCompletionsCommand, JenkinsDocDiagnosticsCommand
 except ImportError:
     from modules import utils
+    from modules.diagnostics import JenkinsDocDiagnosticsCommand, JenkinsDocTestCompletionsCommand
     from modules.listeners import (
-        JenkinsDocStatusBar,
-        JenkinsDocHoverCommand,
         JenkinsCompletions,
+        JenkinsDocHoverCommand,
+        JenkinsDocStatusBar,
         JenkinsGoToDefinitionCommand,
     )
-    from modules.diagnostics import JenkinsDocTestCompletionsCommand, JenkinsDocDiagnosticsCommand
 
 
 def plugin_loaded():

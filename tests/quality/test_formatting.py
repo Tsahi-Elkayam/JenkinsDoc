@@ -3,10 +3,10 @@ Code quality tests - Formatting
 Checks black and isort compliance
 """
 
-import sys
 import os
-import unittest
 import subprocess
+import sys
+import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 

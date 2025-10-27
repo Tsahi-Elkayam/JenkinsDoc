@@ -3,10 +3,10 @@ Validation tests for command registry
 Ensures commands in .sublime-commands match actual command classes
 """
 
-import sys
-import os
-import unittest
 import json
+import os
+import sys
+import unittest
 from unittest.mock import Mock
 
 # Mock sublime before importing

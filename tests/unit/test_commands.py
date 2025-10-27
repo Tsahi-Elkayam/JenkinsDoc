@@ -2,10 +2,10 @@
 Unit tests for JenkinsDoc command classes
 """
 
-import sys
 import os
+import sys
 import unittest
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 # Add tests directory to path for test_helpers
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -18,9 +18,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realp
 sys.modules["sublime"] = sublime_mock
 sys.modules["sublime_plugin"] = sublime_plugin_mock
 
-# Now we can import our modules
-from modules import utils, listeners
 import jenkins_doc
+
+# Now we can import our modules
+from modules import listeners, utils
 
 
 class TestJenkinsDocReloadCommand(unittest.TestCase):

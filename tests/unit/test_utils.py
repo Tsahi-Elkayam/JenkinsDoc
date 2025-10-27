@@ -2,10 +2,10 @@
 Unit tests for JenkinsDoc plugin
 """
 
-import sys
 import os
+import sys
 import unittest
-from unittest.mock import Mock, MagicMock, patch, mock_open
+from unittest.mock import MagicMock, Mock, mock_open, patch
 
 # Add tests directory to path for test_helpers
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))

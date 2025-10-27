@@ -2,10 +2,10 @@
 Unit tests for JenkinsDoc listeners module
 """
 
-import sys
 import os
+import sys
 import unittest
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 # Add tests directory to path for test_helpers
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realp
 sys.modules["sublime"] = sublime_mock
 sys.modules["sublime_plugin"] = sublime_plugin_mock
 
-from modules import utils, listeners
+from modules import listeners, utils
 
 
 class TestJenkinsDocStatusBar(unittest.TestCase):
