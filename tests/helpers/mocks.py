@@ -8,23 +8,27 @@ from unittest.mock import Mock
 # Create proper base classes that can be inherited from
 class MockEventListener:
     """Mock EventListener base class"""
+
     pass
 
 
 class MockTextCommand:
     """Mock TextCommand base class"""
+
     def __init__(self, view):
         self.view = view
 
 
 class MockWindowCommand:
     """Mock WindowCommand base class"""
+
     def __init__(self, window):
         self.window = window
 
 
 class MockApplicationCommand:
     """Mock ApplicationCommand base class"""
+
     pass
 
 

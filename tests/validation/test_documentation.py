@@ -14,8 +14,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from helpers import sublime_mock, sublime_plugin_mock
 
 # Mock sublime before importing
-sys.modules['sublime'] = sublime_mock
-sys.modules['sublime_plugin'] = sublime_plugin_mock
+sys.modules["sublime"] = sublime_mock
+sys.modules["sublime_plugin"] = sublime_plugin_mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
@@ -43,9 +43,8 @@ class TestDocumentation(unittest.TestCase):
 
         for module in modules_to_check:
             for name, obj in inspect.getmembers(module):
-                if inspect.isfunction(obj) and not name.startswith('_'):
-                    self.assertIsNotNone(obj.__doc__,
-                                        f"Function {module.__name__}.{name} missing docstring")
+                if inspect.isfunction(obj) and not name.startswith("_"):
+                    self.assertIsNotNone(obj.__doc__, f"Function {module.__name__}.{name} missing docstring")
 
     def test_command_classes_have_docstrings(self):
         """Test that diagnostic command classes have docstrings"""
@@ -55,8 +54,7 @@ class TestDocumentation(unittest.TestCase):
         ]
 
         for cls in command_classes:
-            self.assertIsNotNone(cls.__doc__,
-                                f"Class {cls.__name__} missing docstring")
+            self.assertIsNotNone(cls.__doc__, f"Class {cls.__name__} missing docstring")
             self.assertTrue(cls.__doc__.strip())
 
     def test_listener_classes_have_docstrings(self):
@@ -69,9 +67,8 @@ class TestDocumentation(unittest.TestCase):
         ]
 
         for cls in listener_classes:
-            self.assertIsNotNone(cls.__doc__,
-                                f"Class {cls.__name__} missing docstring")
+            self.assertIsNotNone(cls.__doc__, f"Class {cls.__name__} missing docstring")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -10,6 +10,7 @@ import os
 import html
 from .utils import is_jenkins_file, get_jenkins_data, get_settings
 
+
 class JenkinsDocStatusBar(sublime_plugin.EventListener):
     """Show JenkinsDoc status in the status bar"""
 
@@ -50,7 +51,7 @@ class JenkinsDocStatusBar(sublime_plugin.EventListener):
 
     def on_post_text_command(self, view, command_name, args):
         """Update status bar after text commands (like set syntax)"""
-        if command_name == 'set_file_type':
+        if command_name == "set_file_type":
             self._update_status(view)
 
     def on_post_save(self, view):
@@ -64,27 +65,28 @@ class JenkinsDocStatusBar(sublime_plugin.EventListener):
             return
 
         settings = get_settings()
-        if not settings or not settings.get('show_status_bar', True):
-            view.erase_status('jenkins_doc')
+        if not settings or not settings.get("show_status_bar", True):
+            view.erase_status("jenkins_doc")
             return
 
         if is_jenkins_file(view, settings):
             # Check if data is loaded
             jenkins_data = get_jenkins_data()
-            if jenkins_data and jenkins_data.get('instructions'):
+            if jenkins_data and jenkins_data.get("instructions"):
                 # Build status text from settings
-                status_text = settings.get('status_bar_text', 'JenkinsDoc')
-                if settings.get('show_instruction_count', False):
-                    count = len(jenkins_data.get('instructions', []))
+                status_text = settings.get("status_bar_text", "JenkinsDoc")
+                if settings.get("show_instruction_count", False):
+                    count = len(jenkins_data.get("instructions", []))
                     status_text = "{} ({} steps)".format(status_text, count)
-                view.set_status('jenkins_doc', status_text)
+                view.set_status("jenkins_doc", status_text)
             else:
                 # Show error state if no data loaded
-                status_text = settings.get('status_bar_text', 'JenkinsDoc')
-                view.set_status('jenkins_doc', "{} (no data)".format(status_text))
+                status_text = settings.get("status_bar_text", "JenkinsDoc")
+                view.set_status("jenkins_doc", "{} (no data)".format(status_text))
         else:
             # Clear status for non-Jenkins files
-            view.erase_status('jenkins_doc')
+            view.erase_status("jenkins_doc")
+
 
 class JenkinsDocHoverCommand(sublime_plugin.EventListener):
     """Show documentation on hover for Jenkins Pipeline keywords"""
@@ -205,7 +207,7 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
             return
 
         settings = get_settings()
-        if not settings or not settings.get('show_hover_docs', True):
+        if not settings or not settings.get("show_hover_docs", True):
             return
 
         if not is_jenkins_file(view, settings):
@@ -221,13 +223,15 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
         doc = self._find_documentation(word, jenkins_data)
         if doc:
             wrapped_doc = "{0}<div class='container'>{1}</div>".format(self.css, doc)
-            max_width = settings.get('hover_popup_max_width', 800)
-            max_height = settings.get('hover_popup_max_height', 500)
-            view.show_popup(wrapped_doc,
-                          flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY,
-                          location=point,
-                          max_width=max_width,
-                          max_height=max_height)
+            max_width = settings.get("hover_popup_max_width", 800)
+            max_height = settings.get("hover_popup_max_height", 500)
+            view.show_popup(
+                wrapped_doc,
+                flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY,
+                location=point,
+                max_width=max_width,
+                max_height=max_height,
+            )
 
     def _find_documentation(self, word, jenkins_data):
         """Find documentation for the given word using O(1) lookup"""
@@ -235,52 +239,54 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
             return None
 
         # Use lookup indices if available (O(1)), fallback to O(n) search if not
-        if '_lookup' in jenkins_data:
-            lookup = jenkins_data['_lookup']
+        if "_lookup" in jenkins_data:
+            lookup = jenkins_data["_lookup"]
 
-            if word in lookup['instructions']:
-                return self._format_instruction_doc(lookup['instructions'][word])
-            if word in lookup['environmentVariables']:
-                return self._format_env_var_doc(lookup['environmentVariables'][word])
-            if word in lookup['sections']:
-                return self._format_section_doc(lookup['sections'][word])
-            if word in lookup['directives']:
-                return self._format_directive_doc(lookup['directives'][word])
+            if word in lookup["instructions"]:
+                return self._format_instruction_doc(lookup["instructions"][word])
+            if word in lookup["environmentVariables"]:
+                return self._format_env_var_doc(lookup["environmentVariables"][word])
+            if word in lookup["sections"]:
+                return self._format_section_doc(lookup["sections"][word])
+            if word in lookup["directives"]:
+                return self._format_directive_doc(lookup["directives"][word])
         else:
             # Fallback to linear search if indices not built
-            for instruction in jenkins_data.get('instructions', []):
-                if instruction['command'] == word:
+            for instruction in jenkins_data.get("instructions", []):
+                if instruction["command"] == word:
                     return self._format_instruction_doc(instruction)
 
-            for env_var in jenkins_data.get('environmentVariables', []):
-                if env_var['name'] == word:
+            for env_var in jenkins_data.get("environmentVariables", []):
+                if env_var["name"] == word:
                     return self._format_env_var_doc(env_var)
 
-            for section in jenkins_data.get('sections', []):
-                if section['name'] == word:
+            for section in jenkins_data.get("sections", []):
+                if section["name"] == word:
                     return self._format_section_doc(section)
 
-            for directive in jenkins_data.get('directives', []):
-                if directive['name'] == word:
+            for directive in jenkins_data.get("directives", []):
+                if directive["name"] == word:
                     return self._format_directive_doc(directive)
 
         return None
 
     def _format_instruction_doc(self, instruction):
         """Format instruction documentation as HTML"""
-        safe_name = html.escape(instruction['name'])
-        safe_description = html.escape(instruction['description'])
+        safe_name = html.escape(instruction["name"])
+        safe_description = html.escape(instruction["description"])
         html_output = """<div class="content-wrapper">
                     <h3>{0}</h3>
                     <div class="section-info">Pipeline Step</div>
-                    <p>{1}</p></div>""".format(safe_name, safe_description)
+                    <p>{1}</p></div>""".format(
+            safe_name, safe_description
+        )
 
-        if instruction['parameters']:
+        if instruction["parameters"]:
             html_output += "<h4>Parameters</h4><ul>"
-            for param in instruction['parameters']:
-                optional = "(Optional)" if param.get('isOptional') else ""
-                safe_param_name = html.escape(param['name'])
-                safe_param_type = html.escape(param['type'])
+            for param in instruction["parameters"]:
+                optional = "(Optional)" if param.get("isOptional") else ""
+                safe_param_name = html.escape(param["name"])
+                safe_param_type = html.escape(param["type"])
                 safe_optional = html.escape(optional)
 
                 # Build parameter documentation with enum values
@@ -290,18 +296,20 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
                             <span class="param-name">{0}</span>
                             <span class="param-type">{1}</span>
                             <span class="param-optional">{2}</span>
-                        </div>""".format(safe_param_name, safe_param_type, safe_optional)
+                        </div>""".format(
+                    safe_param_name, safe_param_type, safe_optional
+                )
 
                 # Add enum values if present (matching VS Code implementation line 57)
-                if param.get('values') and len(param['values']) > 0:
+                if param.get("values") and len(param["values"]) > 0:
                     param_doc += "<div style='margin-left: 20px; margin-top: 8px;'><strong>Values:</strong><ul style='margin: 4px 0; padding-left: 20px;'>"
-                    for value in param['values']:
+                    for value in param["values"]:
                         safe_value = html.escape(value)
                         param_doc += "<li style='color: #9cdcfe;'>{0}</li>".format(safe_value)
                     param_doc += "</ul></div>"
 
                 # Add parameter description
-                safe_param_desc = html.escape(param['description'])
+                safe_param_desc = html.escape(param["description"])
                 param_doc += "<div class='param-desc'>{0}</div>".format(safe_param_desc)
                 param_doc += "</li>"
 
@@ -310,69 +318,80 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
 
         html_output += "</div>"  # Close content-wrapper
 
-        if instruction.get('url'):
-            safe_url = html.escape(instruction['url'])
+        if instruction.get("url"):
+            safe_url = html.escape(instruction["url"])
             html_output += '<a href="{0}" class="doc-link">View Documentation</a>'.format(safe_url)
 
         return html_output
 
     def _format_env_var_doc(self, env_var):
         """Format environment variable documentation as HTML"""
-        safe_name = html.escape(env_var['name'])
-        safe_description = html.escape(env_var['description'])
+        safe_name = html.escape(env_var["name"])
+        safe_description = html.escape(env_var["description"])
         return """
             <div class="content-wrapper">
                 <h3>{0}</h3>
                 <div class="section-info">Environment Variable</div>
                 <p>{1}</p>
             </div>
-        """.format(safe_name, safe_description)
+        """.format(
+            safe_name, safe_description
+        )
 
     def _format_section_doc(self, section):
         """Format section documentation as HTML"""
-        safe_name = html.escape(section['name'])
-        safe_description = html.escape(section['description'])
+        safe_name = html.escape(section["name"])
+        safe_description = html.escape(section["description"])
         html_output = """<div class="content-wrapper">
                     <h3>{0}</h3>
                     <div class="section-info">Pipeline Section</div>
-                    <p>{1}</p></div>""".format(safe_name, safe_description)
+                    <p>{1}</p></div>""".format(
+            safe_name, safe_description
+        )
 
-        if section.get('allowed'):
-            safe_allowed = html.escape(section.get('allowed', ''))
+        if section.get("allowed"):
+            safe_allowed = html.escape(section.get("allowed", ""))
             html_output += """<div class="section-info">
                         <span class="type-label">Allowed</span>
                         {0}
-                      </div>""".format(safe_allowed)
+                      </div>""".format(
+                safe_allowed
+            )
 
         html_output += "</div>"  # Close content-wrapper
 
-        if section.get('url'):
-            safe_url = html.escape(section['url'])
+        if section.get("url"):
+            safe_url = html.escape(section["url"])
             html_output += '<a href="{0}" class="doc-link">View Documentation</a>'.format(safe_url)
         return html_output
 
     def _format_directive_doc(self, directive):
         """Format directive documentation as HTML"""
-        safe_name = html.escape(directive['name'])
-        safe_description = html.escape(directive['description'])
+        safe_name = html.escape(directive["name"])
+        safe_description = html.escape(directive["description"])
         html_output = """<div class="content-wrapper">
                     <h3>{0}</h3>
                     <div class="section-info">Pipeline Directive</div>
-                    <p>{1}</p></div>""".format(safe_name, safe_description)
+                    <p>{1}</p></div>""".format(
+            safe_name, safe_description
+        )
 
-        if directive.get('allowed'):
-            safe_allowed = html.escape(directive.get('allowed', ''))
+        if directive.get("allowed"):
+            safe_allowed = html.escape(directive.get("allowed", ""))
             html_output += """<div class="section-info">
                         <span class="type-label">Allowed</span>
                         {0}
-                      </div>""".format(safe_allowed)
+                      </div>""".format(
+                safe_allowed
+            )
 
         html_output += "</div>"  # Close content-wrapper
 
-        if directive.get('url'):
-            safe_url = html.escape(directive['url'])
+        if directive.get("url"):
+            safe_url = html.escape(directive["url"])
             html_output += '<a href="{0}" class="doc-link">View Documentation</a>'.format(safe_url)
         return html_output
+
 
 class JenkinsCompletions(sublime_plugin.EventListener):
     """Provide autocompletions for Jenkins keywords"""
@@ -382,7 +401,7 @@ class JenkinsCompletions(sublime_plugin.EventListener):
         jenkins_data = get_jenkins_data()
 
         # Always log when called in debug mode
-        if settings and settings.get('debug_mode', False):
+        if settings and settings.get("debug_mode", False):
             print("=== JenkinsDoc: on_query_completions called ===")
             print("  Prefix: '{}'".format(prefix))
             print("  File: {}".format(view.file_name()))
@@ -390,11 +409,11 @@ class JenkinsCompletions(sublime_plugin.EventListener):
         try:
             # Check if it's a Jenkins file
             if not is_jenkins_file(view, settings):
-                if settings and settings.get('debug_mode', False):
+                if settings and settings.get("debug_mode", False):
                     print("  Not a Jenkins file - returning None")
                 return None
 
-            if settings and settings.get('debug_mode', False):
+            if settings and settings.get("debug_mode", False):
                 print("  Is Jenkins file - building completions")
 
             # Start with ALL completions
@@ -402,31 +421,31 @@ class JenkinsCompletions(sublime_plugin.EventListener):
 
             # Priority/common completions that should always appear first
             priority_commands = {
-                'echo': "echo '${1:message}'",
-                'sh': "sh '${1:script}'",
-                'git': "git url: '${1:url}'",
-                'checkout': "checkout scm",
-                'stage': "stage('${1:name}') {\n\t${0}\n}",
-                'steps': "steps {\n\t${0}\n}",
-                'pipeline': "pipeline {\n\t${0}\n}",
-                'agent': "agent ${1:any}",
-                'node': "node('${1:label}') {\n\t${0}\n}",
-                'script': "script {\n\t${0}\n}",
-                'bat': "bat '${1:script}'",
-                'powershell': "powershell '${1:script}'",
-                'pwd': "pwd()",
-                'dir': "dir('${1:path}') {\n\t${0}\n}",
-                'deleteDir': "deleteDir()",
-                'error': "error '${1:message}'",
-                'unstable': "unstable '${1:message}'",
-                'retry': "retry(${1:3}) {\n\t${0}\n}",
-                'timeout': "timeout(time: ${1:1}, unit: '${2:HOURS}') {\n\t${0}\n}",
-                'waitUntil': "waitUntil {\n\t${0}\n}",
-                'sleep': "sleep ${1:60}",
-                'input': "input '${1:Proceed?}'",
-                'parallel': "parallel {\n\t${0}\n}",
-                'when': "when {\n\t${0}\n}",
-                'post': "post {\n\t${0}\n}"
+                "echo": "echo '${1:message}'",
+                "sh": "sh '${1:script}'",
+                "git": "git url: '${1:url}'",
+                "checkout": "checkout scm",
+                "stage": "stage('${1:name}') {\n\t${0}\n}",
+                "steps": "steps {\n\t${0}\n}",
+                "pipeline": "pipeline {\n\t${0}\n}",
+                "agent": "agent ${1:any}",
+                "node": "node('${1:label}') {\n\t${0}\n}",
+                "script": "script {\n\t${0}\n}",
+                "bat": "bat '${1:script}'",
+                "powershell": "powershell '${1:script}'",
+                "pwd": "pwd()",
+                "dir": "dir('${1:path}') {\n\t${0}\n}",
+                "deleteDir": "deleteDir()",
+                "error": "error '${1:message}'",
+                "unstable": "unstable '${1:message}'",
+                "retry": "retry(${1:3}) {\n\t${0}\n}",
+                "timeout": "timeout(time: ${1:1}, unit: '${2:HOURS}') {\n\t${0}\n}",
+                "waitUntil": "waitUntil {\n\t${0}\n}",
+                "sleep": "sleep ${1:60}",
+                "input": "input '${1:Proceed?}'",
+                "parallel": "parallel {\n\t${0}\n}",
+                "when": "when {\n\t${0}\n}",
+                "post": "post {\n\t${0}\n}",
             }
 
             # Track which commands have been added to avoid duplicates
@@ -440,9 +459,9 @@ class JenkinsCompletions(sublime_plugin.EventListener):
                     added_commands.add(cmd.lower())
 
             # Try to add full completions if data is loaded
-            if jenkins_data and jenkins_data.get('instructions'):
-                if settings and settings.get('debug_mode', False):
-                    print("  Adding {} instructions from jenkins_data".format(len(jenkins_data['instructions'])))
+            if jenkins_data and jenkins_data.get("instructions"):
+                if settings and settings.get("debug_mode", False):
+                    print("  Adding {} instructions from jenkins_data".format(len(jenkins_data["instructions"])))
 
                 # Get current context
                 point = locations[0]
@@ -451,17 +470,19 @@ class JenkinsCompletions(sublime_plugin.EventListener):
                 line_up_to_cursor = view.substr(sublime.Region(line_start, point))
 
                 # Check for special contexts
-                if re.search(r'env\.\w*$', line_up_to_cursor):
+                if re.search(r"env\.\w*$", line_up_to_cursor):
                     # Environment variable completions
                     env_completions = self._get_env_completions(jenkins_data, include_prefix=False)
                     if env_completions:
-                        if settings and settings.get('debug_mode', False):
+                        if settings and settings.get("debug_mode", False):
                             print("  Returning {} env completions".format(len(env_completions)))
                         return (env_completions, sublime.INHIBIT_WORD_COMPLETIONS)
 
                 # Add full instruction completions (filtered by prefix)
                 # But limit them for very short prefixes to avoid overwhelming
-                instruction_completions = self._get_instruction_completions(jenkins_data, settings, prefix, added_commands)
+                instruction_completions = self._get_instruction_completions(
+                    jenkins_data, settings, prefix, added_commands
+                )
                 if instruction_completions:
                     # For single character prefixes, limit to avoid too many results
                     if len(prefix) == 1:
@@ -473,25 +494,26 @@ class JenkinsCompletions(sublime_plugin.EventListener):
 
                 # Add sections and directives (only if they match prefix)
                 section_completions = []
-                for section in jenkins_data.get('sections', []):
-                    if not prefix or section['name'].lower().startswith(prefix.lower()):
-                        section_completions.append([
-                            "{}\tJenkins Section".format(section['name']),
-                            "{} {{\n\t$0\n}}".format(section['name'])
-                        ])
+                for section in jenkins_data.get("sections", []):
+                    if not prefix or section["name"].lower().startswith(prefix.lower()):
+                        section_completions.append(
+                            ["{}\tJenkins Section".format(section["name"]), "{} {{\n\t$0\n}}".format(section["name"])]
+                        )
                 completions.extend(section_completions)
 
                 directive_completions = []
-                for directive in jenkins_data.get('directives', []):
-                    if not prefix or directive['name'].lower().startswith(prefix.lower()):
-                        directive_completions.append([
-                            "{}\tJenkins Directive".format(directive['name']),
-                            "{} {{\n\t$0\n}}".format(directive['name'])
-                        ])
+                for directive in jenkins_data.get("directives", []):
+                    if not prefix or directive["name"].lower().startswith(prefix.lower()):
+                        directive_completions.append(
+                            [
+                                "{}\tJenkins Directive".format(directive["name"]),
+                                "{} {{\n\t$0\n}}".format(directive["name"]),
+                            ]
+                        )
                 completions.extend(directive_completions)
 
             # Debug output
-            if settings and settings.get('debug_mode', False):
+            if settings and settings.get("debug_mode", False):
                 print("  Total completions: {}".format(len(completions)))
                 if len(completions) > 0:
                     print("  First 3 completions:")
@@ -502,20 +524,24 @@ class JenkinsCompletions(sublime_plugin.EventListener):
             if completions:
                 return (completions, sublime.INHIBIT_WORD_COMPLETIONS)
             else:
-                if settings and settings.get('debug_mode', False):
+                if settings and settings.get("debug_mode", False):
                     print("  No completions - returning None")
                 return None
 
         except Exception as e:
             print("JenkinsDoc ERROR in on_query_completions: {}".format(str(e)))
             import traceback
+
             traceback.print_exc()
             # Return basic completions on error
-            return ([
-                ["echo\tJenkins", "echo '${1:message}'"],
-                ["sh\tJenkins", "sh '${1:script}'"],
-                ["pipeline\tJenkins", "pipeline {\n\t${0}\n}"]
-            ], sublime.INHIBIT_WORD_COMPLETIONS)
+            return (
+                [
+                    ["echo\tJenkins", "echo '${1:message}'"],
+                    ["sh\tJenkins", "sh '${1:script}'"],
+                    ["pipeline\tJenkins", "pipeline {\n\t${0}\n}"],
+                ],
+                sublime.INHIBIT_WORD_COMPLETIONS,
+            )
 
     def _get_instruction_completions(self, jenkins_data, settings, prefix="", added_commands=None):
         """Get completions for Jenkins instructions
@@ -530,14 +556,14 @@ class JenkinsCompletions(sublime_plugin.EventListener):
         if added_commands is None:
             added_commands = set()
 
-        if not jenkins_data or not jenkins_data.get('instructions'):
-            if settings and settings.get('debug_mode', False):
+        if not jenkins_data or not jenkins_data.get("instructions"):
+            if settings and settings.get("debug_mode", False):
                 print("JenkinsDoc: No instructions data available")
             return completions
 
         # Filter by prefix if provided
-        for instruction in jenkins_data['instructions']:
-            command = instruction['command']
+        for instruction in jenkins_data["instructions"]:
+            command = instruction["command"]
 
             # Skip if already added (e.g., as priority command)
             if command.lower() in added_commands:
@@ -547,17 +573,15 @@ class JenkinsCompletions(sublime_plugin.EventListener):
             if prefix and not command.lower().startswith(prefix.lower()):
                 continue
 
-            if instruction.get('parameters'):
+            if instruction.get("parameters"):
                 contents = "{0}(${{1}})".format(command)
             else:
                 contents = "{0}()".format(command)
 
-            completions.append(
-                ["{0}\tJenkins Step".format(command), contents]
-            )
+            completions.append(["{0}\tJenkins Step".format(command), contents])
             added_commands.add(command.lower())
 
-        if settings and settings.get('debug_mode', False):
+        if settings and settings.get("debug_mode", False):
             print("JenkinsDoc: Created {} instruction completions (filtered by '{}')".format(len(completions), prefix))
         return completions
 
@@ -571,15 +595,15 @@ class JenkinsCompletions(sublime_plugin.EventListener):
         completions = []
         if not jenkins_data:
             return completions
-        for var in jenkins_data.get('environmentVariables', []):
+        for var in jenkins_data.get("environmentVariables", []):
             if include_prefix:
                 # When not after "env.", insert full "env.NAME"
-                trigger = "{0}\tEnvironment Variable".format(var['name'])
-                contents = "env.{0}".format(var['name'])
+                trigger = "{0}\tEnvironment Variable".format(var["name"])
+                contents = "env.{0}".format(var["name"])
             else:
                 # When after "env.", insert just the variable name to avoid duplication
-                trigger = "{0}\tEnvironment Variable".format(var['name'])
-                contents = var['name']
+                trigger = "{0}\tEnvironment Variable".format(var["name"])
+                contents = var["name"]
 
             completions.append([trigger, contents])
 
@@ -594,22 +618,21 @@ class JenkinsCompletions(sublime_plugin.EventListener):
         completions = []
         if not jenkins_data:
             return completions
-        for section in jenkins_data.get('sections', []):
+        for section in jenkins_data.get("sections", []):
             # Check if section has inner instructions
-            if section.get('innerInstructions'):
+            if section.get("innerInstructions"):
                 # Add hint about available inner instructions
-                inner_list = ", ".join(section['innerInstructions'][:3])
-                if len(section['innerInstructions']) > 3:
+                inner_list = ", ".join(section["innerInstructions"][:3])
+                if len(section["innerInstructions"]) > 3:
                     inner_list += "..."
-                trigger = "{0}\tJenkins Section ({1})".format(section['name'], inner_list)
+                trigger = "{0}\tJenkins Section ({1})".format(section["name"], inner_list)
                 # Add a comment hint in the snippet
                 contents = "{0} {{\n\t${{1:// {1}}}\n}}".format(
-                    section['name'],
-                    ", ".join(section['innerInstructions'])
+                    section["name"], ", ".join(section["innerInstructions"])
                 )
             else:
-                trigger = "{0}\tJenkins Section".format(section['name'])
-                contents = "{0} {{\n\t$0\n}}".format(section['name'])
+                trigger = "{0}\tJenkins Section".format(section["name"])
+                contents = "{0} {{\n\t$0\n}}".format(section["name"])
 
             completions.append([trigger, contents])
         return completions
@@ -623,22 +646,21 @@ class JenkinsCompletions(sublime_plugin.EventListener):
         completions = []
         if not jenkins_data:
             return completions
-        for directive in jenkins_data.get('directives', []):
+        for directive in jenkins_data.get("directives", []):
             # Check if directive has inner instructions
-            if directive.get('innerInstructions'):
+            if directive.get("innerInstructions"):
                 # Add hint about available inner instructions
-                inner_list = ", ".join(directive['innerInstructions'][:3])
-                if len(directive['innerInstructions']) > 3:
+                inner_list = ", ".join(directive["innerInstructions"][:3])
+                if len(directive["innerInstructions"]) > 3:
                     inner_list += "..."
-                trigger = "{0}\tJenkins Directive ({1})".format(directive['name'], inner_list)
+                trigger = "{0}\tJenkins Directive ({1})".format(directive["name"], inner_list)
                 # Add a comment hint in the snippet
                 contents = "{0} {{\n\t${{1:// {1}}}\n}}".format(
-                    directive['name'],
-                    ", ".join(directive['innerInstructions'])
+                    directive["name"], ", ".join(directive["innerInstructions"])
                 )
             else:
-                trigger = "{0}\tJenkins Directive".format(directive['name'])
-                contents = "{0} {{\n\t$0\n}}".format(directive['name'])
+                trigger = "{0}\tJenkins Directive".format(directive["name"])
+                contents = "{0} {{\n\t$0\n}}".format(directive["name"])
 
             completions.append([trigger, contents])
         return completions
@@ -652,19 +674,27 @@ class JenkinsCompletions(sublime_plugin.EventListener):
         # Extract post conditions from jenkins_data
         if not jenkins_data:
             return []
-        post_section = next((s for s in jenkins_data.get('sections', [])
-                           if s['name'] == 'post'), None)
+        post_section = next((s for s in jenkins_data.get("sections", []) if s["name"] == "post"), None)
 
-        if not post_section or not post_section.get('innerInstructions'):
+        if not post_section or not post_section.get("innerInstructions"):
             # Fallback to hardcoded values if data not found
-            post_conditions = ['always', 'changed', 'fixed', 'regression', 'aborted',
-                             'failure', 'success', 'unstable', 'unsuccessful', 'cleanup']
+            post_conditions = [
+                "always",
+                "changed",
+                "fixed",
+                "regression",
+                "aborted",
+                "failure",
+                "success",
+                "unstable",
+                "unsuccessful",
+                "cleanup",
+            ]
         else:
-            post_conditions = post_section['innerInstructions']
+            post_conditions = post_section["innerInstructions"]
 
         return [
-            ["{0}\tPost Condition".format(condition),
-             "{0} {{\n\t$0\n}}".format(condition)]
+            ["{0}\tPost Condition".format(condition), "{0} {{\n\t$0\n}}".format(condition)]
             for condition in post_conditions
         ]
 
@@ -676,7 +706,7 @@ class JenkinsCompletions(sublime_plugin.EventListener):
         """
         # Match pattern like "functionName(" or "functionName(param1: 'value', "
         # Get the first word preceding a space or parenthesis, after the last opening brace
-        match = re.search(r'{{?\s*(\w+)\s*[( ](?!.*[\{{(])', line_up_to_cursor)
+        match = re.search(r"{{?\s*(\w+)\s*[( ](?!.*[\{{(])", line_up_to_cursor)
         if not match:
             return []
 
@@ -685,40 +715,39 @@ class JenkinsCompletions(sublime_plugin.EventListener):
         # Find the instruction by command name
         if not jenkins_data:
             return []
-        instruction = next((i for i in jenkins_data.get('instructions', [])
-                          if i['command'] == function_name), None)
+        instruction = next((i for i in jenkins_data.get("instructions", []) if i["command"] == function_name), None)
 
-        if not instruction or not instruction.get('parameters'):
+        if not instruction or not instruction.get("parameters"):
             return []
 
         # Build parameter completions
         completions = []
-        for param in instruction['parameters']:
-            optional_label = "(Optional)" if param.get('isOptional') else ""
-            param_type = param.get('type', 'Unknown')
+        for param in instruction["parameters"]:
+            optional_label = "(Optional)" if param.get("isOptional") else ""
+            param_type = param.get("type", "Unknown")
 
             # Build the description
             desc_parts = []
-            if param.get('values'):
-                desc_parts.append("Values: " + ", ".join(param['values']))
-            if param.get('description'):
-                desc_parts.append(param['description'])
+            if param.get("values"):
+                desc_parts.append("Values: " + ", ".join(param["values"]))
+            if param.get("description"):
+                desc_parts.append(param["description"])
             description = " - ".join(desc_parts) if desc_parts else ""
 
             # Build the insertion text based on type
-            if param_type == 'String':
-                insert_text = "{0}: '${{1}}'".format(param['name'])
-            elif param_type == 'boolean':
-                insert_text = "{0}: ${{1:true}}".format(param['name'])
-            elif param_type == 'Enum' and param.get('values'):
+            if param_type == "String":
+                insert_text = "{0}: '${{1}}'".format(param["name"])
+            elif param_type == "boolean":
+                insert_text = "{0}: ${{1:true}}".format(param["name"])
+            elif param_type == "Enum" and param.get("values"):
                 # For enum, just provide the parameter name and let user type
                 # Sublime doesn't support choice snippets like VS Code
-                insert_text = "{0}: '${{1}}'".format(param['name'])
+                insert_text = "{0}: '${{1}}'".format(param["name"])
             else:
-                insert_text = "{0}: ".format(param['name'])
+                insert_text = "{0}: ".format(param["name"])
 
             # Format: [trigger\tDescription, contents]
-            trigger = "{0}\t{1} {2}".format(param['name'], param_type, optional_label)
+            trigger = "{0}\t{1} {2}".format(param["name"], param_type, optional_label)
             completions.append([trigger, insert_text])
 
         return completions
@@ -731,7 +760,7 @@ class JenkinsCompletions(sublime_plugin.EventListener):
         """
         # Search backwards for 'post {'
         content = view.substr(sublime.Region(0, point))
-        post_matches = list(re.finditer(r'\bpost\s*\{', content))
+        post_matches = list(re.finditer(r"\bpost\s*\{", content))
         if not post_matches:
             return False
 
@@ -744,13 +773,14 @@ class JenkinsCompletions(sublime_plugin.EventListener):
         pos = last_post.end()
         while pos < point and brace_count > 0:
             char = content[pos]
-            if char == '{':
+            if char == "{":
                 brace_count += 1
-            elif char == '}':
+            elif char == "}":
                 brace_count -= 1
             pos += 1
 
         return brace_count > 0
+
 
 class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
     """Provide go-to-definition functionality for Groovy functions"""
@@ -775,10 +805,10 @@ class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
         groovy_files = []
         for root, dirs, files in os.walk(folder):
             # Skip common non-code directories for performance
-            dirs[:] = [d for d in dirs if d not in {'.git', 'node_modules', '__pycache__', '.venv', 'venv'}]
+            dirs[:] = [d for d in dirs if d not in {".git", "node_modules", "__pycache__", ".venv", "venv"}]
 
             for file in files:
-                if file.endswith('.groovy'):
+                if file.endswith(".groovy"):
                     groovy_files.append(os.path.join(root, file))
 
         self._file_cache[folder] = groovy_files
@@ -792,7 +822,7 @@ class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
             return
 
         settings = get_settings()
-        if not settings or not settings.get('enable_goto_definition', True):
+        if not settings or not settings.get("enable_goto_definition", True):
             return
 
         if not is_jenkins_file(view, settings):
@@ -807,20 +837,16 @@ class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
         word = view.substr(word_region)
 
         # Expand to capture object.method pattern
-        extended_region = view.expand_by_class(
-            point,
-            sublime.CLASS_WORD_START | sublime.CLASS_WORD_END,
-            "._"
-        )
+        extended_region = view.expand_by_class(point, sublime.CLASS_WORD_START | sublime.CLASS_WORD_END, "._")
         extended_word = view.substr(extended_region)
 
         # Only show for word.word pattern (like fileName.functionName)
-        if '.' in extended_word:
-            parts = extended_word.split('.')
+        if "." in extended_word:
+            parts = extended_word.split(".")
             if len(parts) == 2:
                 file_name, function_name = parts
                 # Check if we should show popup
-                if settings and settings.get('show_goto_popup', True):
+                if settings and settings.get("show_goto_popup", True):
                     # Show a hint that definition can be navigated
                     link_html = '<a href="goto:{0}:{1}">Go to definition of {2}</a>'.format(
                         file_name, function_name, extended_word
@@ -829,16 +855,16 @@ class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
                         link_html,
                         flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY,
                         location=point,
-                        on_navigate=lambda href: self._handle_goto(view, href)
+                        on_navigate=lambda href: self._handle_goto(view, href),
                     )
 
     def _handle_goto(self, view, href):
         """Handle goto definition navigation"""
-        if not href.startswith('goto:'):
+        if not href.startswith("goto:"):
             return
 
         # Parse the href (format: "goto:fileName:functionName")
-        parts = href[5:].split(':')
+        parts = href[5:].split(":")
         if len(parts) == 2:
             file_name, function_name = parts
             self._goto_definition(view, file_name, function_name)
@@ -869,14 +895,14 @@ class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
 
         # Regex to match Groovy function declarations
         # Matches: def functionName(...) { or void functionName(...) {
-        pattern = r'\b(?:def|void|String|int|boolean|Object|[\w<>]+)\s+{0}\s*\([^{{}}]*?\)\s*\{{'.format(
+        pattern = r"\b(?:def|void|String|int|boolean|Object|[\w<>]+)\s+{0}\s*\([^{{}}]*?\)\s*\{{".format(
             re.escape(function_name)
         )
 
         match = re.search(pattern, content, re.MULTILINE | re.DOTALL)
         if match:
             # Calculate line number
-            line_num = content[:match.start()].count('\n')
+            line_num = content[: match.start()].count("\n")
             point = view.text_point(line_num, 0)
 
             # Move cursor and center view
@@ -906,9 +932,7 @@ class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
                     if self._find_and_open_function_in_file(window, file_path, function_name):
                         return
 
-        sublime.status_message("Definition not found: {0} in {1}.groovy".format(
-            function_name, file_name
-        ))
+        sublime.status_message("Definition not found: {0} in {1}.groovy".format(function_name, file_name))
 
     def _find_and_open_file(self, window, file_name):
         """Find and open a .groovy file by name"""
@@ -923,7 +947,7 @@ class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
 
             for file_path in groovy_files:
                 base_name = os.path.basename(file_path)
-                if base_name == file_name + '.groovy' or base_name == file_name:
+                if base_name == file_name + ".groovy" or base_name == file_name:
                     window.open_file(file_path)
                     return
 
@@ -932,22 +956,19 @@ class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
     def _find_and_open_function_in_file(self, window, file_path, function_name):
         """Open file and navigate to function definition"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Search for function definition
-            pattern = r'\b(?:def|void|String|int|boolean|Object|[\w<>]+)\s+{0}\s*\([^{{}}]*?\)\s*\{{'.format(
+            pattern = r"\b(?:def|void|String|int|boolean|Object|[\w<>]+)\s+{0}\s*\([^{{}}]*?\)\s*\{{".format(
                 re.escape(function_name)
             )
 
             match = re.search(pattern, content, re.MULTILINE | re.DOTALL)
             if match:
-                line_num = content[:match.start()].count('\n')
+                line_num = content[: match.start()].count("\n")
                 # Open file at the specific line
-                window.open_file(
-                    "{0}:{1}:0".format(file_path, line_num + 1),
-                    sublime.ENCODED_POSITION
-                )
+                window.open_file("{0}:{1}:0".format(file_path, line_num + 1), sublime.ENCODED_POSITION)
                 return True
         except Exception as e:
             print("Error reading file {0}: {1}".format(file_path, str(e)))

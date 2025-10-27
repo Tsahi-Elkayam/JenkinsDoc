@@ -24,7 +24,7 @@ def run_tests(category=None):
 
     # Determine which tests to run
     if category:
-        if category not in ['unit', 'integration', 'validation', 'quality']:
+        if category not in ["unit", "integration", "validation", "quality"]:
             print(f"Error: Unknown category '{category}'")
             print("Valid categories: unit, integration, validation, quality")
             return False
@@ -43,7 +43,7 @@ def run_tests(category=None):
 
     # Discover and load tests
     loader = unittest.TestLoader()
-    suite = loader.discover(test_path, pattern='test_*.py')
+    suite = loader.discover(test_path, pattern="test_*.py")
 
     # Run tests
     runner = unittest.TextTestRunner(verbosity=2)
@@ -73,7 +73,7 @@ def main():
     category = sys.argv[1] if len(sys.argv) > 1 else None
 
     # Show help
-    if category in ['-h', '--help', 'help']:
+    if category in ["-h", "--help", "help"]:
         print(__doc__)
         return 0
 
@@ -83,5 +83,5 @@ def main():
     return 0 if success else 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

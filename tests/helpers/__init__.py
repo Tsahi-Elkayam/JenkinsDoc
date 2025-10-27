@@ -10,15 +10,15 @@ from .mocks import (
     MockApplicationCommand,
     sublime_mock,
     sublime_plugin_mock,
-    setup_sublime_mocks
+    setup_sublime_mocks,
 )
 
 __all__ = [
-    'MockEventListener',
-    'MockTextCommand',
-    'MockWindowCommand',
-    'MockApplicationCommand',
-    'sublime_mock',
-    'sublime_plugin_mock',
-    'setup_sublime_mocks'
+    "MockEventListener",
+    "MockTextCommand",
+    "MockWindowCommand",
+    "MockApplicationCommand",
+    "sublime_mock",
+    "sublime_plugin_mock",
+    "setup_sublime_mocks",
 ]

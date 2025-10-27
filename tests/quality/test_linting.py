@@ -23,18 +23,23 @@ class TestLinting(unittest.TestCase):
         """Test for critical Python syntax errors with flake8"""
         try:
             result = subprocess.run(
-                ['flake8', '.', '--count', '--select=E9,F63,F7,F82',
-                 '--show-source', '--statistics',
-                 '--exclude=venv,ENV,env,__pycache__,.git'],
+                [
+                    "flake8",
+                    ".",
+                    "--count",
+                    "--select=E9,F63,F7,F82",
+                    "--show-source",
+                    "--statistics",
+                    "--exclude=venv,ENV,env,__pycache__,.git",
+                ],
                 cwd=self.plugin_dir,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             # Should have no critical errors
-            self.assertEqual(result.returncode, 0,
-                           f"Critical flake8 errors found:\n{result.stdout}\n{result.stderr}")
+            self.assertEqual(result.returncode, 0, f"Critical flake8 errors found:\n{result.stdout}\n{result.stderr}")
 
         except FileNotFoundError:
             self.skipTest("flake8 not installed")
@@ -45,13 +50,19 @@ class TestLinting(unittest.TestCase):
         """Test for style issues with flake8 (non-blocking)"""
         try:
             result = subprocess.run(
-                ['flake8', '.', '--count', '--max-complexity=15',
-                 '--max-line-length=120', '--statistics',
-                 '--exclude=venv,ENV,env,__pycache__,.git'],
+                [
+                    "flake8",
+                    ".",
+                    "--count",
+                    "--max-complexity=15",
+                    "--max-line-length=120",
+                    "--statistics",
+                    "--exclude=venv,ENV,env,__pycache__,.git",
+                ],
                 cwd=self.plugin_dir,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             # This is informational - we just print warnings
@@ -64,5 +75,5 @@ class TestLinting(unittest.TestCase):
             self.skipTest("flake8 timed out")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

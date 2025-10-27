@@ -15,8 +15,8 @@ from helpers import setup_sublime_mocks, sublime_mock, sublime_plugin_mock
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
 # Mock Sublime Text modules before importing plugin code
-sys.modules['sublime'] = sublime_mock
-sys.modules['sublime_plugin'] = sublime_plugin_mock
+sys.modules["sublime"] = sublime_mock
+sys.modules["sublime_plugin"] = sublime_plugin_mock
 
 # Now we can import our modules
 from modules import utils, listeners
@@ -38,15 +38,15 @@ class TestJenkinsDocReloadCommand(unittest.TestCase):
         self.mock_settings = Mock()
         sublime_mock.load_settings.return_value = self.mock_settings
 
-    @patch('modules.utils.load_jenkins_data')
+    @patch("modules.utils.load_jenkins_data")
     def test_reload_success(self, mock_load):
         """Test successful reload"""
         mock_data = {
-            'plugins': [{'name': 'test'}],
-            'instructions': [{'command': 'echo'}],
-            'sections': [],
-            'directives': [],
-            'environmentVariables': []
+            "plugins": [{"name": "test"}],
+            "instructions": [{"command": "echo"}],
+            "sections": [],
+            "directives": [],
+            "environmentVariables": [],
         }
         mock_load.return_value = mock_data
         self.mock_settings.get.return_value = True
@@ -63,11 +63,11 @@ class TestJenkinsDocReloadCommand(unittest.TestCase):
         # Should show success message
         sublime_mock.status_message.assert_called_once()
         call_args = sublime_mock.status_message.call_args[0][0]
-        self.assertIn('Reloaded', call_args)
-        self.assertIn('1 plugins', call_args)
-        self.assertIn('1 instructions', call_args)
+        self.assertIn("Reloaded", call_args)
+        self.assertIn("1 plugins", call_args)
+        self.assertIn("1 instructions", call_args)
 
-    @patch('modules.utils.load_jenkins_data')
+    @patch("modules.utils.load_jenkins_data")
     def test_reload_failure(self, mock_load):
         """Test reload with no data"""
         mock_load.return_value = None
@@ -78,7 +78,7 @@ class TestJenkinsDocReloadCommand(unittest.TestCase):
         # Should show failure message
         sublime_mock.status_message.assert_called_once()
         call_args = sublime_mock.status_message.call_args[0][0]
-        self.assertIn('Failed', call_args)
+        self.assertIn("Failed", call_args)
 
 
 class TestJenkinsDocDiagnosticsCommand(unittest.TestCase):
@@ -95,20 +95,20 @@ class TestJenkinsDocDiagnosticsCommand(unittest.TestCase):
 
         # Mock data
         self.mock_data = {
-            'plugins': [{'name': 'test'}],
-            'instructions': [{'command': 'echo'}],
-            'sections': [{'name': 'pipeline'}],
-            'directives': [{'name': 'agent'}],
-            'environmentVariables': [{'name': 'BUILD_NUMBER'}]
+            "plugins": [{"name": "test"}],
+            "instructions": [{"command": "echo"}],
+            "sections": [{"name": "pipeline"}],
+            "directives": [{"name": "agent"}],
+            "environmentVariables": [{"name": "BUILD_NUMBER"}],
         }
 
         self.mock_settings = Mock()
         self.mock_settings.get.side_effect = lambda key, default=None: {
-            'enabled': True,
-            'enable_autocompletion': True,
-            'show_hover_docs': True,
-            'show_status_bar': True,
-            'debug_mode': False
+            "enabled": True,
+            "enable_autocompletion": True,
+            "show_hover_docs": True,
+            "show_status_bar": True,
+            "debug_mode": False,
         }.get(key, default)
 
         utils.set_jenkins_data(self.mock_data)
@@ -117,10 +117,10 @@ class TestJenkinsDocDiagnosticsCommand(unittest.TestCase):
     def test_diagnostics_with_data(self):
         """Test diagnostics output with loaded data"""
         view = Mock()
-        view.file_name.return_value = '/path/to/Jenkinsfile'
+        view.file_name.return_value = "/path/to/Jenkinsfile"
         syntax_mock = Mock()
-        syntax_mock.name = 'Groovy'
-        syntax_mock.scope = 'source.groovy'
+        syntax_mock.name = "Groovy"
+        syntax_mock.scope = "source.groovy"
         view.syntax.return_value = syntax_mock
 
         self.window.active_view.return_value = view
@@ -132,11 +132,11 @@ class TestJenkinsDocDiagnosticsCommand(unittest.TestCase):
         output = sublime_mock.message_dialog.call_args[0][0]
 
         # Check output contains expected info
-        self.assertIn('JenkinsDoc Diagnostics', output)
-        self.assertIn('Data loaded: Yes', output)
-        self.assertIn('Plugins: 1', output)
-        self.assertIn('Instructions: 1', output)
-        self.assertIn('Settings loaded: Yes', output)
+        self.assertIn("JenkinsDoc Diagnostics", output)
+        self.assertIn("Data loaded: Yes", output)
+        self.assertIn("Plugins: 1", output)
+        self.assertIn("Instructions: 1", output)
+        self.assertIn("Settings loaded: Yes", output)
 
     def test_diagnostics_without_data(self):
         """Test diagnostics output without data"""
@@ -149,7 +149,7 @@ class TestJenkinsDocDiagnosticsCommand(unittest.TestCase):
         sublime_mock.message_dialog.assert_called_once()
         output = sublime_mock.message_dialog.call_args[0][0]
 
-        self.assertIn('Data loaded: No', output)
+        self.assertIn("Data loaded: No", output)
 
     def test_diagnostics_copies_to_clipboard(self):
         """Test that diagnostics are copied to clipboard"""
@@ -181,11 +181,11 @@ class TestJenkinsDocShowCommand(unittest.TestCase):
         message = sublime_mock.message_dialog.call_args[0][0]
 
         # Check message contains expected info
-        self.assertIn('Jenkins Documentation', message)
-        self.assertIn('Version:', message)
-        self.assertIn('Tsahi Elkayam', message)
-        self.assertIn('Features:', message)
-        self.assertIn('Repository:', message)
+        self.assertIn("Jenkins Documentation", message)
+        self.assertIn("Version:", message)
+        self.assertIn("Tsahi Elkayam", message)
+        self.assertIn("Features:", message)
+        self.assertIn("Repository:", message)
 
 
 class TestJenkinsDocTestCompletionsCommand(unittest.TestCase):
@@ -211,11 +211,10 @@ class TestJenkinsDocTestCompletionsCommand(unittest.TestCase):
         self.command.run()
 
         # Should run auto_complete command
-        view.run_command.assert_called_once_with('auto_complete', {
-            'disable_auto_insert': True,
-            'api_completions_only': False,
-            'next_completion_if_showing': False
-        })
+        view.run_command.assert_called_once_with(
+            "auto_complete",
+            {"disable_auto_insert": True, "api_completions_only": False, "next_completion_if_showing": False},
+        )
 
         # Should show message
         sublime_mock.message_dialog.assert_called_once()
@@ -229,17 +228,17 @@ class TestJenkinsDocTestCompletionsCommand(unittest.TestCase):
         # Should show error message
         sublime_mock.message_dialog.assert_called_once()
         message = sublime_mock.message_dialog.call_args[0][0]
-        self.assertIn('No active view', message)
+        self.assertIn("No active view", message)
 
 
 class TestOpenUrlCommand(unittest.TestCase):
     """Test the OpenUrlCommand class"""
 
-    @patch('webbrowser.open')
+    @patch("webbrowser.open")
     def test_open_url(self, mock_open):
         """Test opening URL in browser"""
         command = jenkins_doc.OpenUrlCommand()
-        test_url = 'https://www.jenkins.io/doc/pipeline/steps/'
+        test_url = "https://www.jenkins.io/doc/pipeline/steps/"
 
         command.run(test_url)
 
@@ -250,15 +249,15 @@ class TestOpenUrlCommand(unittest.TestCase):
 class TestPluginLoaded(unittest.TestCase):
     """Test the plugin_loaded function"""
 
-    @patch('modules.utils.load_jenkins_data')
+    @patch("modules.utils.load_jenkins_data")
     def test_plugin_loaded_success(self, mock_load):
         """Test successful plugin loading"""
         mock_data = {
-            'plugins': [{'name': 'test'}],
-            'instructions': [{'command': 'echo'}],
-            'sections': [],
-            'directives': [],
-            'environmentVariables': []
+            "plugins": [{"name": "test"}],
+            "instructions": [{"command": "echo"}],
+            "sections": [],
+            "directives": [],
+            "environmentVariables": [],
         }
         mock_load.return_value = mock_data
 
@@ -270,33 +269,25 @@ class TestPluginLoaded(unittest.TestCase):
         jenkins_doc.plugin_loaded()
 
         # Should load settings and data
-        sublime_mock.load_settings.assert_called_with('JenkinsDoc.sublime-settings')
+        sublime_mock.load_settings.assert_called_with("JenkinsDoc.sublime-settings")
         mock_load.assert_called_once()
 
         # Data should be set
         loaded_data = utils.get_jenkins_data()
         self.assertEqual(loaded_data, mock_data)
 
-    @patch('modules.utils.load_jenkins_data')
+    @patch("modules.utils.load_jenkins_data")
     def test_plugin_loaded_with_console_messages_disabled(self, mock_load):
         """Test plugin loading with console messages disabled"""
-        mock_data = {
-            'plugins': [],
-            'instructions': [],
-            'sections': [],
-            'directives': [],
-            'environmentVariables': []
-        }
+        mock_data = {"plugins": [], "instructions": [], "sections": [], "directives": [], "environmentVariables": []}
         mock_load.return_value = mock_data
 
         mock_settings = Mock()
-        mock_settings.get.side_effect = lambda key, default=None: {
-            'show_console_messages': False
-        }.get(key, default)
+        mock_settings.get.side_effect = lambda key, default=None: {"show_console_messages": False}.get(key, default)
         sublime_mock.load_settings.return_value = mock_settings
 
         # Reset print mock if it was called before
-        with patch('builtins.print') as mock_print:
+        with patch("builtins.print") as mock_print:
             jenkins_doc.plugin_loaded()
 
             # Should not print anything
@@ -310,120 +301,106 @@ class TestIntegrationScenarios(unittest.TestCase):
         """Set up test fixtures"""
         # Comprehensive mock data
         self.mock_data = {
-            'plugins': [
-                {'name': 'Pipeline', 'url': 'https://plugins.jenkins.io/workflow-aggregator/'}
-            ],
-            'instructions': [
+            "plugins": [{"name": "Pipeline", "url": "https://plugins.jenkins.io/workflow-aggregator/"}],
+            "instructions": [
                 {
-                    'command': 'echo',
-                    'name': 'Echo',
-                    'description': 'Print a message to the console',
-                    'parameters': [{
-                        'name': 'message',
-                        'type': 'String',
-                        'description': 'The message to print',
-                        'isOptional': False
-                    }],
-                    'url': 'https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#echo'
-                },
-                {
-                    'command': 'sh',
-                    'name': 'Shell Script',
-                    'description': 'Execute a shell script',
-                    'parameters': [
+                    "command": "echo",
+                    "name": "Echo",
+                    "description": "Print a message to the console",
+                    "parameters": [
                         {
-                            'name': 'script',
-                            'type': 'String',
-                            'description': 'The script to execute',
-                            'isOptional': False
-                        },
-                        {
-                            'name': 'returnStatus',
-                            'type': 'boolean',
-                            'description': 'Return the status code',
-                            'isOptional': True
+                            "name": "message",
+                            "type": "String",
+                            "description": "The message to print",
+                            "isOptional": False,
                         }
                     ],
-                    'url': 'https://www.jenkins.io/doc/pipeline/steps/workflow-durable-task-step/#sh'
+                    "url": "https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#echo",
                 },
                 {
-                    'command': 'timeout',
-                    'name': 'Timeout',
-                    'description': 'Execute with a timeout',
-                    'parameters': [
+                    "command": "sh",
+                    "name": "Shell Script",
+                    "description": "Execute a shell script",
+                    "parameters": [
                         {
-                            'name': 'time',
-                            'type': 'int',
-                            'description': 'The timeout duration',
-                            'isOptional': False
+                            "name": "script",
+                            "type": "String",
+                            "description": "The script to execute",
+                            "isOptional": False,
                         },
                         {
-                            'name': 'unit',
-                            'type': 'Enum',
-                            'description': 'The time unit',
-                            'isOptional': True,
-                            'values': ['SECONDS', 'MINUTES', 'HOURS', 'DAYS']
-                        }
+                            "name": "returnStatus",
+                            "type": "boolean",
+                            "description": "Return the status code",
+                            "isOptional": True,
+                        },
                     ],
-                    'url': 'https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#timeout'
-                }
+                    "url": "https://www.jenkins.io/doc/pipeline/steps/workflow-durable-task-step/#sh",
+                },
+                {
+                    "command": "timeout",
+                    "name": "Timeout",
+                    "description": "Execute with a timeout",
+                    "parameters": [
+                        {"name": "time", "type": "int", "description": "The timeout duration", "isOptional": False},
+                        {
+                            "name": "unit",
+                            "type": "Enum",
+                            "description": "The time unit",
+                            "isOptional": True,
+                            "values": ["SECONDS", "MINUTES", "HOURS", "DAYS"],
+                        },
+                    ],
+                    "url": "https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#timeout",
+                },
             ],
-            'sections': [
+            "sections": [
                 {
-                    'name': 'pipeline',
-                    'description': 'The declarative pipeline section',
-                    'url': 'https://www.jenkins.io/doc/book/pipeline/syntax/#declarative-pipeline'
+                    "name": "pipeline",
+                    "description": "The declarative pipeline section",
+                    "url": "https://www.jenkins.io/doc/book/pipeline/syntax/#declarative-pipeline",
                 },
                 {
-                    'name': 'stages',
-                    'description': 'Contains multiple stage directives',
-                    'url': 'https://www.jenkins.io/doc/book/pipeline/syntax/#stages'
+                    "name": "stages",
+                    "description": "Contains multiple stage directives",
+                    "url": "https://www.jenkins.io/doc/book/pipeline/syntax/#stages",
                 },
                 {
-                    'name': 'post',
-                    'description': 'Post-build actions',
-                    'innerInstructions': ['always', 'success', 'failure', 'unstable'],
-                    'url': 'https://www.jenkins.io/doc/book/pipeline/syntax/#post'
-                }
+                    "name": "post",
+                    "description": "Post-build actions",
+                    "innerInstructions": ["always", "success", "failure", "unstable"],
+                    "url": "https://www.jenkins.io/doc/book/pipeline/syntax/#post",
+                },
             ],
-            'directives': [
+            "directives": [
                 {
-                    'name': 'agent',
-                    'description': 'Specifies where the pipeline will execute',
-                    'url': 'https://www.jenkins.io/doc/book/pipeline/syntax/#agent'
+                    "name": "agent",
+                    "description": "Specifies where the pipeline will execute",
+                    "url": "https://www.jenkins.io/doc/book/pipeline/syntax/#agent",
                 },
                 {
-                    'name': 'options',
-                    'description': 'Pipeline-specific options',
-                    'url': 'https://www.jenkins.io/doc/book/pipeline/syntax/#options'
-                }
+                    "name": "options",
+                    "description": "Pipeline-specific options",
+                    "url": "https://www.jenkins.io/doc/book/pipeline/syntax/#options",
+                },
             ],
-            'environmentVariables': [
-                {
-                    'name': 'BUILD_NUMBER',
-                    'description': 'The current build number'
-                },
-                {
-                    'name': 'JOB_NAME',
-                    'description': 'Name of the project of this build'
-                },
-                {
-                    'name': 'WORKSPACE',
-                    'description': 'The absolute path of the workspace'
-                }
-            ]
+            "environmentVariables": [
+                {"name": "BUILD_NUMBER", "description": "The current build number"},
+                {"name": "JOB_NAME", "description": "Name of the project of this build"},
+                {"name": "WORKSPACE", "description": "The absolute path of the workspace"},
+            ],
         }
 
         self.mock_settings = Mock()
         self.mock_settings.get.side_effect = lambda key, default=None: {
-            'enabled': True,
-            'detect_groovy_files': True,
-            'detect_jenkinsfile': True,
-            'additional_file_patterns': [],
-            'show_hover_docs': True,
-            'show_status_bar': True,
-            'enable_autocompletion': True,
-            'debug_mode': False
+            "enabled": True,
+            "detect_groovy_files": True,
+            "detect_jenkinsfile": True,
+            "additional_file_patterns": [],
+            "show_hover_docs": True,
+            "show_status_bar": True,
+            "enable_autocompletion": True,
+            "debug_mode": False,
         }.get(key, default)
 
         utils.set_jenkins_data(self.mock_data)
@@ -434,101 +411,91 @@ class TestIntegrationScenarios(unittest.TestCase):
         # 1. Check file detection
         view = Mock()
         view.syntax.return_value = None
-        view.file_name.return_value = '/project/Jenkinsfile'
+        view.file_name.return_value = "/project/Jenkinsfile"
 
         is_jenkins = utils.is_jenkins_file(view, self.mock_settings)
         self.assertTrue(is_jenkins)
 
         # 2. Get completions
         completions_handler = listeners.JenkinsCompletions()
-        completions = completions_handler._get_instruction_completions(
-            self.mock_data, self.mock_settings, ""
-        )
+        completions = completions_handler._get_instruction_completions(self.mock_data, self.mock_settings, "")
 
         self.assertGreater(len(completions), 0)
-        commands = [c[0].split('\t')[0] for c in completions]
-        self.assertIn('echo', commands)
-        self.assertIn('sh', commands)
+        commands = [c[0].split("\t")[0] for c in completions]
+        self.assertIn("echo", commands)
+        self.assertIn("sh", commands)
 
         # 3. Get hover documentation
         hover_handler = listeners.JenkinsDocHoverCommand()
-        doc = hover_handler._find_documentation('echo', self.mock_data)
+        doc = hover_handler._find_documentation("echo", self.mock_data)
 
         self.assertIsNotNone(doc)
-        self.assertIn('Print a message', doc)
+        self.assertIn("Print a message", doc)
 
     def test_complete_workflow_groovy_file(self):
         """Test complete workflow for a .groovy file"""
         # 1. Check file detection by syntax
         view = Mock()
         syntax_mock = Mock()
-        syntax_mock.scope = 'source.groovy'
+        syntax_mock.scope = "source.groovy"
         view.syntax.return_value = syntax_mock
-        view.file_name.return_value = '/project/vars/myLibrary.groovy'
+        view.file_name.return_value = "/project/vars/myLibrary.groovy"
 
         is_jenkins = utils.is_jenkins_file(view, self.mock_settings)
         self.assertTrue(is_jenkins)
 
         # 2. Get environment variable completions
         completions_handler = listeners.JenkinsCompletions()
-        env_completions = completions_handler._get_env_completions(
-            self.mock_data, include_prefix=False
-        )
+        env_completions = completions_handler._get_env_completions(self.mock_data, include_prefix=False)
 
         self.assertEqual(len(env_completions), 3)
         vars = [c[1] for c in env_completions]
-        self.assertIn('BUILD_NUMBER', vars)
-        self.assertIn('JOB_NAME', vars)
-        self.assertIn('WORKSPACE', vars)
+        self.assertIn("BUILD_NUMBER", vars)
+        self.assertIn("JOB_NAME", vars)
+        self.assertIn("WORKSPACE", vars)
 
     def test_parameter_completion_workflow(self):
         """Test parameter completion for a command"""
         completions_handler = listeners.JenkinsCompletions()
 
         # User types inside a block "{ sh(" - should get parameter completions
-        completions = completions_handler._get_parameter_completions(
-            self.mock_data, "stage('build') { sh("
-        )
+        completions = completions_handler._get_parameter_completions(self.mock_data, "stage('build') { sh(")
 
         self.assertEqual(len(completions), 2)  # script and returnStatus
-        params = [c[0].split('\t')[0] for c in completions]
-        self.assertIn('script', params)
-        self.assertIn('returnStatus', params)
+        params = [c[0].split("\t")[0] for c in completions]
+        self.assertIn("script", params)
+        self.assertIn("returnStatus", params)
 
     def test_enum_parameter_values(self):
         """Test that enum parameter shows available values"""
         hover_handler = listeners.JenkinsDocHoverCommand()
 
         # timeout command has enum parameter with values
-        timeout_instruction = next(
-            i for i in self.mock_data['instructions'] if i['command'] == 'timeout'
-        )
+        timeout_instruction = next(i for i in self.mock_data["instructions"] if i["command"] == "timeout")
         doc = hover_handler._format_instruction_doc(timeout_instruction)
 
         # Should show enum values
-        self.assertIn('Values:', doc)
-        self.assertIn('SECONDS', doc)
-        self.assertIn('MINUTES', doc)
-        self.assertIn('HOURS', doc)
-        self.assertIn('DAYS', doc)
+        self.assertIn("Values:", doc)
+        self.assertIn("SECONDS", doc)
+        self.assertIn("MINUTES", doc)
+        self.assertIn("HOURS", doc)
+        self.assertIn("DAYS", doc)
 
     def test_section_with_inner_instructions(self):
         """Test section that has inner instructions"""
         completions_handler = listeners.JenkinsCompletions()
 
         # post section has innerInstructions
-        post_section = next(
-            s for s in self.mock_data['sections'] if s['name'] == 'post'
-        )
+        post_section = next(s for s in self.mock_data["sections"] if s["name"] == "post")
 
         completions = completions_handler._get_section_completions(self.mock_data)
 
         # Find post completion
-        post_completion = next(c for c in completions if 'post' in c[0])
+        post_completion = next(c for c in completions if "post" in c[0])
 
         # Should include hint about inner instructions
-        self.assertIn('always', post_completion[0])
+        self.assertIn("always", post_completion[0])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

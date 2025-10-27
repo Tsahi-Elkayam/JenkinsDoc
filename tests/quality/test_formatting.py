@@ -23,12 +23,11 @@ class TestFormatting(unittest.TestCase):
         """Test that code follows black formatting"""
         try:
             result = subprocess.run(
-                ['black', '--check', '--line-length=120',
-                 r'--exclude=/(\.git|venv|ENV|env|__pycache__)/', '.'],
+                ["black", "--check", "--line-length=120", r"--exclude=/(\.git|venv|ENV|env|__pycache__)/", "."],
                 cwd=self.plugin_dir,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if result.returncode != 0:
@@ -47,13 +46,21 @@ class TestFormatting(unittest.TestCase):
         """Test that imports follow isort formatting"""
         try:
             result = subprocess.run(
-                ['isort', '--check-only', '--profile', 'black',
-                 '--line-length', '120',
-                 '--skip-glob=*/venv/*', '--skip-glob=*/__pycache__/*', '.'],
+                [
+                    "isort",
+                    "--check-only",
+                    "--profile",
+                    "black",
+                    "--line-length",
+                    "120",
+                    "--skip-glob=*/venv/*",
+                    "--skip-glob=*/__pycache__/*",
+                    ".",
+                ],
                 cwd=self.plugin_dir,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if result.returncode != 0:
@@ -69,5 +76,5 @@ class TestFormatting(unittest.TestCase):
             self.skipTest("isort timed out")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
