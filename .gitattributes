@@ -1,0 +1,31 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Source files
+*.py text eol=lf
+*.groovy text eol=lf
+
+# Configuration files
+*.json text eol=lf
+*.sublime-settings text eol=lf
+*.sublime-keymap text eol=lf
+*.sublime-commands text eol=lf
+*.sublime-menu text eol=lf
+
+# Documentation
+*.md text eol=lf
+*.txt text eol=lf
+LICENSE text eol=lf
+README text eol=lf
+
+# Exclude test files and development files from Package Control distribution
+tests/ export-ignore
+scraper/ export-ignore
+examples/ export-ignore
+.github/ export-ignore
+.git/ export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
+*.pyc export-ignore
+__pycache__/ export-ignore
+.claude/ export-ignore
