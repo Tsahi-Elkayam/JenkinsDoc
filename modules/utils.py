@@ -62,7 +62,9 @@ def load_jenkins_data(settings):
     """Load Jenkins documentation data from JSON file"""
     global _priority_snippets
     data_file = settings.get("data_file", "jenkins_data.json") if settings else "jenkins_data.json"
-    snippets_file = settings.get("priority_snippets_file", "priority_snippets.json") if settings else "priority_snippets.json"
+    snippets_file = (
+        settings.get("priority_snippets_file", "priority_snippets.json") if settings else "priority_snippets.json"
+    )
 
     _priority_snippets = _load_json(snippets_file, {})
 

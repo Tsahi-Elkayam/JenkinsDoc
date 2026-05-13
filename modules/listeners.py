@@ -284,9 +284,7 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
         html_output = """<div class="content-wrapper">
                     <h3>{0}</h3>
                     <div class="section-info">Pipeline Step</div>
-                    <p>{1}</p></div>""".format(
-            safe_name, safe_description
-        )
+                    <p>{1}</p></div>""".format(safe_name, safe_description)
 
         if instruction["parameters"]:
             html_output += "<h4>Parameters</h4><ul>"
@@ -303,9 +301,7 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
                             <span class="param-name">{0}</span>
                             <span class="param-type">{1}</span>
                             <span class="param-optional">{2}</span>
-                        </div>""".format(
-                    safe_param_name, safe_param_type, safe_optional
-                )
+                        </div>""".format(safe_param_name, safe_param_type, safe_optional)
 
                 # Add enum values if present (matching VS Code implementation line 57)
                 if param.get("values") and len(param["values"]) > 0:
@@ -341,9 +337,7 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
                 <div class="section-info">Environment Variable</div>
                 <p>{1}</p>
             </div>
-        """.format(
-            safe_name, safe_description
-        )
+        """.format(safe_name, safe_description)
 
     def _format_section_doc(self, section):
         """Format section documentation as HTML"""
@@ -352,18 +346,14 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
         html_output = """<div class="content-wrapper">
                     <h3>{0}</h3>
                     <div class="section-info">Pipeline Section</div>
-                    <p>{1}</p></div>""".format(
-            safe_name, safe_description
-        )
+                    <p>{1}</p></div>""".format(safe_name, safe_description)
 
         if section.get("allowed"):
             safe_allowed = html.escape(section.get("allowed", ""))
             html_output += """<div class="section-info">
                         <span class="type-label">Allowed</span>
                         {0}
-                      </div>""".format(
-                safe_allowed
-            )
+                      </div>""".format(safe_allowed)
 
         html_output += "</div>"  # Close content-wrapper
 
@@ -379,18 +369,14 @@ class JenkinsDocHoverCommand(sublime_plugin.EventListener):
         html_output = """<div class="content-wrapper">
                     <h3>{0}</h3>
                     <div class="section-info">Pipeline Directive</div>
-                    <p>{1}</p></div>""".format(
-            safe_name, safe_description
-        )
+                    <p>{1}</p></div>""".format(safe_name, safe_description)
 
         if directive.get("allowed"):
             safe_allowed = html.escape(directive.get("allowed", ""))
             html_output += """<div class="section-info">
                         <span class="type-label">Allowed</span>
                         {0}
-                      </div>""".format(
-                safe_allowed
-            )
+                      </div>""".format(safe_allowed)
 
         html_output += "</div>"  # Close content-wrapper
 
@@ -468,13 +454,15 @@ class JenkinsCompletions(sublime_plugin.EventListener):
 
                 pl = prefix.lower() if prefix else ""
                 section_completions = [
-                    c for c in self._get_section_completions(jenkins_data)
+                    c
+                    for c in self._get_section_completions(jenkins_data)
                     if not pl or c[0].split("\t")[0].lower().startswith(pl)
                 ]
                 completions.extend(section_completions)
 
                 directive_completions = [
-                    c for c in self._get_directive_completions(jenkins_data)
+                    c
+                    for c in self._get_directive_completions(jenkins_data)
                     if not pl or c[0].split("\t")[0].lower().startswith(pl)
                 ]
                 completions.extend(directive_completions)
@@ -817,15 +805,11 @@ class JenkinsGoToDefinitionCommand(sublime_plugin.EventListener):
             return
 
         if function_name:
-            sublime.set_timeout_async(
-                lambda: self._find_function_in_files(window, file_or_function, function_name)
-            )
+            sublime.set_timeout_async(lambda: self._find_function_in_files(window, file_or_function, function_name))
         else:
             if self._find_function_in_current_file(view, file_or_function):
                 return
-            sublime.set_timeout_async(
-                lambda: self._find_and_open_file(window, file_or_function)
-            )
+            sublime.set_timeout_async(lambda: self._find_and_open_file(window, file_or_function))
 
     def _find_function_in_current_file(self, view, function_name):
         """Search for function definition in the current file"""
