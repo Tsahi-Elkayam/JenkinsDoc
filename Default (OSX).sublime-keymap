@@ -1,0 +1,9 @@
+[
+    // Open JenkinsDoc settings
+    // { "keys": ["super+shift+j", "super+shift+s"], "command": "edit_settings",
+    //   "args": {
+    //     "base_file": "${packages}/JenkinsDoc/JenkinsDoc.sublime-settings",
+    //     "default": "// Settings in here override those in \"JenkinsDoc/JenkinsDoc.sublime-settings\"\n{\n\t\n}\n"
+    //   }
+    // }
+]

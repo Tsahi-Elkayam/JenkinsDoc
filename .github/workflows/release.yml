@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+
+    - name: Run tests
+      run: |
+        python tests/run_tests.py
+
+    - name: Extract version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+    - name: Create release notes
+      id: release_notes
+      run: |
+        cat > release_notes.md << 'EOF'
+        ## JenkinsDoc v${{ steps.get_version.outputs.VERSION }}
+
+        Jenkins Pipeline documentation and autocompletion for Sublime Text.
+
+        ### Features
+        - Hover documentation for Jenkins Pipeline steps
+        - Autocompletion with parameter hints
+        - Go to definition for Groovy functions
+        - Context-aware completions
+        - Status bar indicator
+        - Environment variable completions
+
+        ### Installation
+        Install via Package Control: `Install Package` → `JenkinsDoc`
+
+        Or clone manually to your Sublime Text Packages folder.
+
+        ### Documentation
+        See the [README](https://github.com/${{ github.repository }}) for full documentation and usage examples.
+        EOF
+
+    - name: Create Release Archive
+      run: |
+        # Create a clean distribution
+        mkdir -p dist/JenkinsDoc
+
+        # Copy essential files
+        cp jenkins_doc.py dist/JenkinsDoc/
+        cp -r modules dist/JenkinsDoc/
+        cp -r data dist/JenkinsDoc/
+        cp README.md dist/JenkinsDoc/
+        cp LICENSE dist/JenkinsDoc/
+        cp JenkinsDoc.sublime-settings dist/JenkinsDoc/ || true
+        cp Main.sublime-menu dist/JenkinsDoc/ || true
+
+        # Create archive
+        cd dist
+        zip -r JenkinsDoc-v${{ steps.get_version.outputs.VERSION }}.zip JenkinsDoc/
+        cd ..
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Release v${{ steps.get_version.outputs.VERSION }}
+        body_path: release_notes.md
+        files: |
+          dist/JenkinsDoc-v${{ steps.get_version.outputs.VERSION }}.zip
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

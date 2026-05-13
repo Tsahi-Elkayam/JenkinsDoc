@@ -1,0 +1,62 @@
+{
+  "jenkins_base_url": "https://www.jenkins.io",
+  "output_file": "../data/jenkins_data.json",
+  "output_file_formatted": "../data/jenkins_data_formatted.json",
+  "request_delay": 0.1,
+  "save_formatted_version": false,
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+  "environment_variables": [
+    {
+      "name": "BUILD_NUMBER",
+      "description": "The current build number"
+    },
+    {
+      "name": "BUILD_ID",
+      "description": "The current build ID"
+    },
+    {
+      "name": "BUILD_DISPLAY_NAME",
+      "description": "Display name of the current build"
+    },
+    {
+      "name": "JOB_NAME",
+      "description": "Name of the project of this build"
+    },
+    {
+      "name": "BUILD_TAG",
+      "description": "String of jenkins-${JOB_NAME}-${BUILD_NUMBER}"
+    },
+    {
+      "name": "EXECUTOR_NUMBER",
+      "description": "The unique number that identifies the current executor"
+    },
+    {
+      "name": "NODE_NAME",
+      "description": "Name of the node the current build is running on"
+    },
+    {
+      "name": "NODE_LABELS",
+      "description": "Whitespace-separated list of labels assigned to the node"
+    },
+    {
+      "name": "WORKSPACE",
+      "description": "The absolute path of the workspace"
+    },
+    {
+      "name": "JENKINS_HOME",
+      "description": "The absolute path on the master node for Jenkins to store data"
+    },
+    {
+      "name": "JENKINS_URL",
+      "description": "Full URL of Jenkins"
+    },
+    {
+      "name": "BUILD_URL",
+      "description": "Full URL of this build"
+    },
+    {
+      "name": "JOB_URL",
+      "description": "Full URL of this job"
+    }
+  ]
+}
